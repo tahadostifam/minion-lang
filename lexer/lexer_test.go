@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/tahadostifam/monkey-lang/token"
+	"github.com/tahadostifam/minion-lang/token"
 )
 
 func TestNextToken(t *testing.T) {

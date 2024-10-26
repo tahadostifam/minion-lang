@@ -3,7 +3,7 @@ package lexer
 import (
 	"strings"
 
-	"github.com/tahadostifam/monkey-lang/token"
+	"github.com/tahadostifam/minion-lang/token"
 )
 
 type Lexer struct {

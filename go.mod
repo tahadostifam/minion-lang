@@ -1,4 +1,4 @@
-module github.com/tahadostifam/monkey-lang
+module github.com/tahadostifam/minion-lang
 
 go 1.23.2
 

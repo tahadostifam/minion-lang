@@ -1,15 +1,7 @@
-# Minion Lang
-
-<br/>
-<br/>
-
-<div style="text-align: center;">
+<div align="center">
     <img width="200" src="./docs/logo.png"/>
+    <h3 align="center">Minion Lang</h3>
 </div>
-
-<br/>
-<br/>
-
 
 **MinionLang** is a playful, **interpreter-based** programming language designed for delightful learning pursposes. Crafted with Go, MinionLang is a beginner-friendly language that introduces fundamental programming concepts in a fun and interactive way.
 

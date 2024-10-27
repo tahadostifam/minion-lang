@@ -37,17 +37,28 @@ func (l *Lexer) NextToken() *token.Token {
 	var tok *token.Token
 
 	l.skipWhitespace()
+
 	chStr := string(l.ch)
 
 	switch l.ch {
 	case '=':
-		tok = token.NewToken(token.ASSIGN, chStr)
+		if l.peekChar() == '=' {
+			l.readChar() // consume the equal sign
+			tok = token.NewToken(token.EQ, chStr)
+		} else {
+			tok = token.NewToken(token.ASSIGN, chStr)
+		}
 	case '+':
 		tok = token.NewToken(token.PLUS, chStr)
 	case '-':
 		tok = token.NewToken(token.MINUS, chStr)
 	case '!':
-		tok = token.NewToken(token.BANG, chStr)
+		if l.peekChar() == '=' {
+			l.readChar() // consume the equal sign
+			tok = token.NewToken(token.NOT_EQ, chStr)
+		} else {
+			tok = token.NewToken(token.BANG, chStr)
+		}
 	case '*':
 		tok = token.NewToken(token.ASTERISK, chStr)
 	case '/':
@@ -65,9 +76,9 @@ func (l *Lexer) NextToken() *token.Token {
 	case ')':
 		tok = token.NewToken(token.RPAREN, chStr)
 	case '{':
-		tok = token.NewToken(token.RBRACE, chStr)
-	case '}':
 		tok = token.NewToken(token.LBRACE, chStr)
+	case '}':
+		tok = token.NewToken(token.RBRACE, chStr)
 	case 0:
 		tok = token.NewToken(token.EOF, "")
 	default:
@@ -86,9 +97,21 @@ func (l *Lexer) NextToken() *token.Token {
 	return tok
 }
 
-func (l *Lexer) skipWhitespace() {
+func (l *Lexer) skipWhitespace() bool {
 	if l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
 		l.readChar()
+		return true
+	}
+
+	return false
+}
+
+// This method is used to peek or look quickly to next character by using the l.nextPos
+func (l *Lexer) peekChar() byte {
+	if l.nextPos >= len(l.input) {
+		return 0
+	} else {
+		return l.input[l.nextPos]
 	}
 }
 

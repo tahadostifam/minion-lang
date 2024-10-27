@@ -77,6 +77,74 @@ func TestNextToken(t *testing.T) {
 	}
 }
 
+func TestKeywords(t *testing.T) {
+	testCases := []struct {
+		input  string
+		tokens []token.TokenType
+	}{
+		{
+			input: `let a = 10; let b = 20; if (a < b) {}`,
+			tokens: []token.TokenType{
+				// for variable a;
+				token.IDENT,
+				token.IDENT,
+				token.ASSIGN,
+				token.INT,
+				token.SEMICOLON,
+
+				// for variable b;
+				token.IDENT,
+				token.IDENT,
+				token.ASSIGN,
+				token.INT,
+				token.SEMICOLON,
+
+				// for if keyword;
+				token.IDENT,
+				token.LPAREN,
+				token.IDENT,
+				token.LT,
+				token.IDENT,
+				token.RPAREN,
+				token.LBRACE,
+				token.RBRACE,
+			},
+		},
+		{
+			input: "==",
+			tokens: []token.TokenType{
+				token.EQ,
+			},
+		},
+		{
+			input: `if (a == b) { }`,
+			tokens: []token.TokenType{
+				token.IDENT,
+				token.LPAREN,
+				token.IDENT,
+				token.EQ,
+				token.IDENT,
+				token.RPAREN,
+				token.LBRACE,
+				token.RBRACE,
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		l := New(tc.input)
+
+		var tok *token.Token = l.NextToken()
+
+		i := 0
+		for tok.Type != token.EOF {
+			assert.Equal(t, tok.Type, tc.tokens[i])
+			tok = l.NextToken()
+			i++
+		}
+	}
+}
+
 func TestReadChar(t *testing.T) {
 	input := "abc{}(); &"
 	l := New(input)

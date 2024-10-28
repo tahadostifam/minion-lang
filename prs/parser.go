@@ -1,6 +1,8 @@
 package prs
 
 import (
+	"fmt"
+
 	"github.com/tahadostifam/minion-lang/ast"
 	"github.com/tahadostifam/minion-lang/lexer"
 	"github.com/tahadostifam/minion-lang/token"
@@ -63,25 +65,29 @@ func (p *Parser) isCurToken(t token.TokenType) bool {
 	return p.curToken.Type == t
 }
 
-func (p *Parser) isPeekToken(t token.TokenType) bool {
-	return p.peekToken.Type == t
+func (p *Parser) expectedToken(t token.TokenType) bool {
+	if p.curToken.Type == t {
+		p.nextToken()
+		return true
+	} else {
+		p.peekError(t)
+		return false
+	}
 }
 
 func (p *Parser) parseLetStatement() ast.Statement {
 	stmt := &ast.LetStatement{Token: p.curToken}
 
-	if p.curToken.Type != token.LET {
+	if !p.expectedToken(token.LET) {
 		return nil
 	}
-	p.nextToken()
 
 	stmt.Name = &ast.Identifier{Token: p.curToken, Literal: p.curToken.Literal}
 	p.nextToken()
 
-	if p.curToken.Type != token.ASSIGN {
+	if !p.expectedToken(token.ASSIGN) {
 		return nil
 	}
-	p.nextToken()
 
 	// TODO - parsing expression not implemented yet
 
@@ -90,4 +96,18 @@ func (p *Parser) parseLetStatement() ast.Statement {
 	}
 
 	return stmt
+}
+
+func (p *Parser) Errors() []string {
+	return p.errors
+}
+
+func (p *Parser) peekError(t token.TokenType) {
+	msg := fmt.Sprintf("expected next token to be %v, but got %v", t, p.peekToken.Type)
+
+	p.errors = append(p.errors, msg)
+}
+
+func (p *Parser) ParsedValidly() bool {
+	return len(p.errors) == 0
 }

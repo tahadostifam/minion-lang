@@ -1,9 +1,6 @@
 package prs
 
 import (
-	"fmt"
-	"log"
-
 	"github.com/tahadostifam/minion-lang/ast"
 	"github.com/tahadostifam/minion-lang/lexer"
 	"github.com/tahadostifam/minion-lang/token"
@@ -14,10 +11,12 @@ type Parser struct {
 
 	curToken  *token.Token
 	peekToken *token.Token
+
+	errors []string
 }
 
 func New(l *lexer.Lexer) *Parser {
-	p := &Parser{l: l}
+	p := &Parser{l: l, errors: []string{}}
 
 	// we need to call nextToken twice to initialize the
 	// curToken and peekToken correctly and then next calls
@@ -35,7 +34,6 @@ func (p *Parser) ParseProgram() *ast.Program {
 
 	for p.curToken.Type != token.EOF {
 		stmt := p.parseStatement()
-		fmt.Println(stmt)
 
 		if stmt != nil {
 			program.Statements = append(program.Statements, stmt)
@@ -43,8 +41,6 @@ func (p *Parser) ParseProgram() *ast.Program {
 
 		p.nextToken()
 	}
-
-	fmt.Println(len(program.Statements))
 
 	return program
 }
@@ -58,18 +54,9 @@ func (p *Parser) parseStatement() ast.Statement {
 	switch p.curToken.Type {
 	case token.LET:
 		return p.parseLetStatement()
-	default:
-		return nil
-	}
-}
-
-func (p *Parser) expectPeek(t token.TokenType) bool {
-	if p.isPeekToken(t) {
-		p.nextToken()
-		return true
 	}
 
-	return false
+	return nil
 }
 
 func (p *Parser) isCurToken(t token.TokenType) bool {
@@ -81,21 +68,22 @@ func (p *Parser) isPeekToken(t token.TokenType) bool {
 }
 
 func (p *Parser) parseLetStatement() ast.Statement {
-	log.Println(p.curToken)
-
 	stmt := &ast.LetStatement{Token: p.curToken}
 
-	if !p.expectPeek(token.IDENT) {
+	if p.curToken.Type != token.LET {
 		return nil
 	}
-
-	stmt.Name = &ast.Identifier{Token: p.curToken, Literal: p.curToken.Literal}
-
 	p.nextToken()
 
-	if !p.expectPeek(token.ASSIGN) {
+	stmt.Name = &ast.Identifier{Token: p.curToken, Literal: p.curToken.Literal}
+	p.nextToken()
+
+	if p.curToken.Type != token.ASSIGN {
 		return nil
 	}
+	p.nextToken()
+
+	// TODO - parsing expression not implemented yet
 
 	for !p.isCurToken(token.SEMICOLON) {
 		p.nextToken()

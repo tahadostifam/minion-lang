@@ -3,15 +3,43 @@ package prs
 import (
 	"testing"
 
+	"github.com/tahadostifam/minion-lang/ast"
 	"github.com/tahadostifam/minion-lang/lexer"
 )
 
 func TestParseLetStatement(t *testing.T) {
-	input := `let a = 10;`
+	testCases := []struct {
+		input        string
+		nameLiteral  string
+		valueLiteral string
+	}{
+		{
+			input:        `let foobar = 10;`,
+			nameLiteral:  "foobar",
+			valueLiteral: "10",
+		},
+		// {
+		// 	input:        `let x = 500000;`,
+		// 	nameLiteral:  "x",
+		// 	valueLiteral: "500000",
+		// },
+		// {
+		// 	input:        `let sample_variable = 0;`,
+		// 	nameLiteral:  "sample_variable",
+		// 	valueLiteral: "0",
+		// },
+	}
 
-	l := lexer.New(input)
-	p := New(l)
+	for _, tc := range testCases {
+		l := lexer.New(tc.input)
+		p := New(l)
 
-	program := p.ParseProgram()
-	t.Log(program.Statements)
+		program := p.ParseProgram()
+
+		letStmt := program.Statements[0].(*ast.LetStatement)
+
+		t.Log(letStmt.Value)
+		// assert.Equal(t, letStmt.Name.Literal, tc.nameLiteral, "Let expression name literal does not match the specified value")
+		// assert.Equal(t, letStmt.Value.TokenLiteral(), tc.valueLiteral, "Let expression value literal does not match the specified value")
+	}
 }

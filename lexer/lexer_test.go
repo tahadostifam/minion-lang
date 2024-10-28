@@ -86,21 +86,21 @@ func TestKeywords(t *testing.T) {
 			input: `let a = 10; let b = 20; if (a < b) {}`,
 			tokens: []token.TokenType{
 				// for variable a;
-				token.IDENT,
+				token.LET,
 				token.IDENT,
 				token.ASSIGN,
 				token.INT,
 				token.SEMICOLON,
 
 				// for variable b;
-				token.IDENT,
+				token.LET,
 				token.IDENT,
 				token.ASSIGN,
 				token.INT,
 				token.SEMICOLON,
 
 				// for if keyword;
-				token.IDENT,
+				token.IF,
 				token.LPAREN,
 				token.IDENT,
 				token.LT,
@@ -119,7 +119,7 @@ func TestKeywords(t *testing.T) {
 		{
 			input: `if (a == b) { }`,
 			tokens: []token.TokenType{
-				token.IDENT,
+				token.IF,
 				token.LPAREN,
 				token.IDENT,
 				token.EQ,
@@ -127,6 +127,16 @@ func TestKeywords(t *testing.T) {
 				token.RPAREN,
 				token.LBRACE,
 				token.RBRACE,
+			},
+		},
+		{
+			input: "let x = 20;",
+			tokens: []token.TokenType{
+				token.LET,
+				token.IDENT,
+				token.ASSIGN,
+				token.INT,
+				token.SEMICOLON,
 			},
 		},
 	}

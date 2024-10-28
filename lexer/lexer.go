@@ -16,7 +16,7 @@ type Lexer struct {
 }
 
 func New(input string) *Lexer {
-	l := &Lexer{input: input}
+	l := &Lexer{input: strings.TrimSpace(input)}
 	l.readChar()
 	return l
 }
@@ -83,7 +83,20 @@ func (l *Lexer) NextToken() *token.Token {
 		tok = token.NewToken(token.EOF, "")
 	default:
 		if isLetter(l.ch) {
-			tok = token.NewToken(token.IDENT, l.readIdentifier())
+			ident := l.readIdentifier()
+
+			switch token.LookupIdent(ident) {
+			case token.LET:
+				tok = token.NewToken(token.LET, ident)
+			case token.IF:
+				tok = token.NewToken(token.IF, ident)
+			case token.ELSE:
+				tok = token.NewToken(token.ELSE, ident)
+			case token.RETURN:
+				tok = token.NewToken(token.RETURN, ident)
+			default:
+				tok = token.NewToken(token.IDENT, ident)
+			}
 			return tok
 		} else if isNumber(l.ch) {
 			tok = token.NewToken(token.INT, l.readNumber())

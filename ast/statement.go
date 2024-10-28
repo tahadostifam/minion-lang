@@ -7,7 +7,7 @@ type Statement interface {
 }
 
 type LetStatement struct {
-	Token token.Token
+	Token *token.Token
 	Name  *Identifier
 	Value Expression
 }

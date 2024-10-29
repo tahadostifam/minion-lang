@@ -74,3 +74,35 @@ func TestParseLetStatementFailed(t *testing.T) {
 		t.Log("\n")
 	}
 }
+
+func TestParseExpressions(t *testing.T) {
+	testCases := []struct {
+		input      string
+		operator   string
+		integerVal string
+	}{
+		{
+			input:      "-10",
+			operator:   "-",
+			integerVal: "10",
+		},
+	}
+
+	for _, tc := range testCases {
+		l := lexer.New(tc.input)
+		p := New(l)
+		program := p.ParseProgram()
+
+		assert.Len(t, p.Errors(), 0)
+		assert.Len(t, program.Statements, 1)
+
+		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+		assert.True(t, ok, "unable to cast program.Statements[0] to *ast.ExpressionStatement")
+
+		expr, ok := stmt.Expression.(*ast.PrefixExpression)
+		assert.True(t, ok, "unable to cast stmt.Expression to *ast.PrefixExpression")
+
+		assert.Equal(t, expr.Operator, tc.operator)
+		assert.Equal(t, expr.Right.TokenLiteral(), tc.integerVal)
+	}
+}

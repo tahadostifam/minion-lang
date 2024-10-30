@@ -86,6 +86,11 @@ func TestParseExpressions(t *testing.T) {
 			operator:   "-",
 			integerVal: "10",
 		},
+		{
+			input:      "+1000",
+			operator:   "+",
+			integerVal: "1000",
+		},
 	}
 
 	for _, tc := range testCases {

@@ -59,23 +59,14 @@ func TestParseLetStatementFailed(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-
 		l := lexer.New(tc.input)
 		p := New(l)
 
 		p.ParseProgram()
-
-		t.Log("Input: ", tc.input)
-
-		for _, v := range p.Errors() {
-			t.Logf("Parser Error: %s", v)
-		}
-
-		t.Log("\n")
 	}
 }
 
-func TestParseExpressions(t *testing.T) {
+func TestParsePrefixExpressions(t *testing.T) {
 	testCases := []struct {
 		input      string
 		operator   string
@@ -109,5 +100,80 @@ func TestParseExpressions(t *testing.T) {
 
 		assert.Equal(t, expr.Operator, tc.operator)
 		assert.Equal(t, expr.Right.TokenLiteral(), tc.integerVal)
+	}
+}
+func TestParseInfixExpressions(t *testing.T) {
+	testCases := []struct {
+		input      string
+		operator   string
+		leftValue  string
+		rightValue string
+	}{
+		{
+			input:      "1 + 2",
+			operator:   "+",
+			leftValue:  "1",
+			rightValue: "2",
+		},
+		{
+			input:      "10 / 2",
+			operator:   "/",
+			leftValue:  "10",
+			rightValue: "2",
+		},
+		{
+			input:      "10 * 2",
+			operator:   "*",
+			leftValue:  "10",
+			rightValue: "2",
+		},
+		{
+			input:      "20 - 20",
+			operator:   "-",
+			leftValue:  "20",
+			rightValue: "20",
+		},
+		{
+			input:      "1 > 2",
+			operator:   ">",
+			leftValue:  "1",
+			rightValue: "2",
+		},
+		{
+			input:      "1 < 2",
+			operator:   "<",
+			leftValue:  "1",
+			rightValue: "2",
+		},
+		{
+			input:      "1 == 2",
+			operator:   "==",
+			leftValue:  "1",
+			rightValue: "2",
+		},
+		{
+			input:      "1 != ident",
+			operator:   "!=",
+			leftValue:  "1",
+			rightValue: "ident",
+		},
+	}
+
+	for _, tc := range testCases {
+		l := lexer.New(tc.input)
+		p := New(l)
+		program := p.ParseProgram()
+
+		assert.Len(t, p.Errors(), 0)
+
+		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+		assert.True(t, ok, "unable to cast program.Statements[0] to *ast.ExpressionStatement")
+
+		expr, ok := stmt.Expression.(*ast.InfixExpression)
+		assert.True(t, ok, "unable to cast stmt.Expression to *ast.InfixExpression")
+
+		assert.Equal(t, expr.Operator, tc.operator)
+		assert.Equal(t, expr.Left.TokenLiteral(), tc.leftValue)
+		assert.Equal(t, expr.Right.TokenLiteral(), tc.rightValue)
 	}
 }

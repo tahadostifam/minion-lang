@@ -44,7 +44,7 @@ func (l *Lexer) NextToken() *token.Token {
 	case '=':
 		if l.peekChar() == '=' {
 			l.readChar() // consume the equal sign
-			tok = token.NewToken(token.EQ, chStr)
+			tok = token.NewToken(token.EQ, "==")
 		} else {
 			tok = token.NewToken(token.ASSIGN, chStr)
 		}
@@ -55,7 +55,7 @@ func (l *Lexer) NextToken() *token.Token {
 	case '!':
 		if l.peekChar() == '=' {
 			l.readChar() // consume the equal sign
-			tok = token.NewToken(token.NOT_EQ, chStr)
+			tok = token.NewToken(token.NOT_EQ, "!=")
 		} else {
 			tok = token.NewToken(token.BANG, chStr)
 		}

@@ -1,0 +1,14 @@
+[package]
+name = "taha-lang"
+version = "0.1.0"
+edition = "2021"
+resolver = "2"
+
+[workspace]
+members = ["lexer"]
+
+[[bin]]
+name = "taha"
+path = "./interpreter/main.rs"
+
+

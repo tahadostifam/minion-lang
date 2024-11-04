@@ -1,36 +1,36 @@
-<div align="center">
-    <img width="200" src="./docs/logo.png"/>
-    <h3 align="center">Minion Lang</h3>
-</div>
+# Taha Lang
 
-**MinionLang** is a playful, **interpreter-based** programming language designed for delightful learning pursposes. Crafted with Go, MinionLang is a beginner-friendly language that introduces fundamental programming concepts in a fun and interactive way.
+Welcome to Taha Lang, a lightweight programming language designed for fun and experimentation! Whether you're a seasoned developer or just starting out, Taha Lang is the perfect way to explore coding concepts and unleash your creativity.
 
-## Examples
-Coming soon.
+## Installation
+
+Requires the rust version 1.81 to be installed on your system.
+
+```bash
+git clone --depth 1 https://github.com/tahadostifam/Taha-Lang.git
+cd Taha-Lang
+cargo build --release
+cp ./target/release/taha /usr/bin/taha
+
+taha --version
+```
+
+## Example Code
+
+```
+Coming soon!
+```
+
+## Documentation
+
+- [Wiki](https://github.com/tahadostifam/taha-lang/wiki)
 
 ## Community
 
-**Telegram Channel:** [@geek_engineers](https://t.me/geek_engineers)
+**Geek Engineers** community shaped the Taha Lang and it welcomes people all around the world with passion and kindness.
 
-## Maintainers
+Telegram: [@geek_engineers](https://t.me/geek_engineers)
 
-- [Tahadostifam](https://github.com/tahadostifam)
+## Open to Contribution
 
-## Contribution
-We welcome contributions from the community to improve MinionLang. Whether you're a seasoned developer or just starting out, your help is valuable.
-
-**Here's how you can contribute:**
-
-- Report Issues: If you find a bug or have a feature request, please open an issue on our GitHub repository.
-
-- Fix Bugs: Contribute bug fixes and improvements to the codebase.
-
-- Add New Features: Implement new features to enhance MinionLang's capabilities.
-
-- Write Documentation: Create clear and concise documentation to help users learn and use MinionLang.
-
-- Review Pull Requests: Help us maintain code quality by reviewing pull requests from other contributors.
-
-- To get started, fork the repository, make your changes, and submit a pull request. We'll review your contribution and provide feedback.
-
-Thank you for your support!
+Taha Lang is an open-source project, and we value your contributions! If you're interested in helping to shape the future of Taha Lang, feel free to fork the repository, propose improvements, or report any issues you encounter.

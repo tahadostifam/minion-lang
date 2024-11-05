@@ -1,6 +1,7 @@
 #[cfg(test)]
 mod tests {
-    use crate::{token::Token, Lexer};
+    use token::Token;
+    use crate::Lexer;
 
     fn assert_tokens(input: &str, expected_tokens: Vec<Token>) {
         let lexer = Lexer::new(input.to_string());

@@ -5,10 +5,8 @@ edition = "2021"
 resolver = "2"
 
 [workspace]
-members = ["lexer"]
+members = ["ast", "lexer", "token"]
 
 [[bin]]
 name = "taha"
 path = "./interpreter/main.rs"
-
-

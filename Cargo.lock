@@ -3,9 +3,23 @@
 version = 3
 
 [[package]]
+name = "ast"
+version = "0.1.0"
+dependencies = [
+ "token",
+]
+
+[[package]]
 name = "lexer"
 version = "0.1.0"
+dependencies = [
+ "token",
+]
 
 [[package]]
 name = "taha-lang"
+version = "0.1.0"
+
+[[package]]
+name = "token"
 version = "0.1.0"

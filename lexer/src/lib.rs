@@ -2,7 +2,6 @@ use std::fmt::{self, Debug};
 use token::Token;
 
 mod lexer_test;
-mod token;
 
 #[derive(Debug, Clone)]
 pub struct Lexer {
@@ -131,7 +130,7 @@ impl Lexer {
 
         let end = self.pos;
 
-        let identifier: i32 = self.input[start..end]
+        let identifier: i64 = self.input[start..end]
             .to_string()
             .parse()
             .expect("expected identifier to be a number but it's something unknown");

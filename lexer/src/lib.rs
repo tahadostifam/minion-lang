@@ -1,8 +1,4 @@
-use std::{
-    borrow::{Borrow, BorrowMut},
-    fmt::{self, Debug},
-    ops::Deref,
-};
+use std::fmt::{self, Debug};
 use token::Token;
 
 mod lexer_test;
@@ -13,8 +9,7 @@ pub struct Lexer {
     input: String,
     pos: usize,
     next_pos: usize,
-    ch: char,
-    errors: Vec<String>,
+    ch: char
 }
 
 impl Lexer {
@@ -24,7 +19,6 @@ impl Lexer {
             pos: 0,      // points to current position
             next_pos: 0, // points to next position
             ch: ' ',
-            errors: vec![],
         };
 
         lexer.read_char();
@@ -103,7 +97,7 @@ impl Lexer {
                 if self.ch.is_alphabetic() {
                     return Ok(self.read_identifider());
                 } else if self.is_numeric(self.ch) {
-                    return Ok(self.read_integer()); 
+                    return Ok(self.read_integer());
                 } else {
                     return Err(format!("Illegal character detected {}", self.ch));
                 }

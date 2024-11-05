@@ -25,7 +25,7 @@ impl Lexer {
 
         lexer.read_char();
 
-        lexer
+        return lexer;
     }
 
     fn peek_char(&self) -> char {
@@ -74,7 +74,26 @@ impl Lexer {
             '#' => Token::Hashtag,
             '"' => Token::DoubleQuote,
             '|' => Token::Pipe,
-            '=' => Token::Assign,
+            '=' => {
+                if self.peek_char() == '=' {
+                    self.read_char(); // consume current equal sign
+                    self.read_char(); // consume peeked equal sign
+                    return Ok(Token::Equal);
+                } else {
+                    self.read_char(); // consume current equal sign
+                    return Ok(Token::Assign);
+                }
+            }
+            '!' => {
+                if self.peek_char() == '=' {
+                    self.read_char();
+                    self.read_char();
+                    return Ok(Token::NotEqual);
+                } else {
+                    self.read_char(); // consume current equal sign
+                    return Ok(Token::Bang);
+                }
+            }
             ' ' | '\0' => Token::EOF,
             _ => {
                 return Err(format!("Illegal character detected {}", self.ch));

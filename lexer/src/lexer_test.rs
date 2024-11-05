@@ -63,6 +63,28 @@ mod tests {
             Token::Pipe,
         ];
 
+        println!("\n\n");
+
+        let mut i: usize = 0;
+        for token in lexer {
+            assert_eq!(token, detected_tokens[i]);
+            i += 1;
+        }
+
+        println!("\n\n");
+    }
+
+    #[test]
+    fn test_equals() {
+        let input = String::from("!= , ==");
+        let lexer = Lexer::new(input);
+
+        let detected_tokens: Vec<Token> = vec![
+            Token::NotEqual,
+            Token::Comma,
+            Token::Equal,
+        ];
+
         let mut i: usize = 0;
         for token in lexer {
             assert_eq!(token, detected_tokens[i]);

@@ -15,16 +15,30 @@ pub enum Token {
 
     // Symbols
     Assign,
+    Equal,
+    NotEqual,
     Bang,
     LeftParen,
     RightParen,
     LeftBrace,
     RightBrace,
+    LeftBracket,
+    RightBracket,
     Comma,
     Hashtag,
     DoubleQuote,
     Pipe,
+    Semicolon,
 
     // Keywords
-    Disco,
+    Function,
+    Switch,
+    If, 
+    Else,
+    ElseIf,
+    Return,
+    For,
+    Break,
+    Continue,
 }
+    

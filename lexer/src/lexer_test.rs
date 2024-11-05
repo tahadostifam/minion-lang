@@ -2,25 +2,29 @@
 mod tests {
     use crate::{token::Token, Lexer};
 
-    #[test]
-    fn test_operators() {
-        let input = String::from("+ - * / % =");
-        let lexer = Lexer::new(input);
-
-        let detected_tokens: Vec<Token> = vec![
-            Token::Plus,
-            Token::Minus,
-            Token::Asterisk,
-            Token::Slash,
-            Token::Modulo,
-            Token::Assign,
-        ];
+    fn assert_tokens(input: &str, expected_tokens: Vec<Token>) {
+        let lexer = Lexer::new(input.to_string());
 
         let mut i: usize = 0;
         for token in lexer {
-            assert_eq!(token, detected_tokens[i]);
+            assert_eq!(token, expected_tokens[i]);
             i += 1;
         }
+    }
+
+    #[test]
+    fn test_operators() {
+        assert_tokens(
+            "+ - * / % =",
+            vec![
+                Token::Plus,
+                Token::Minus,
+                Token::Asterisk,
+                Token::Slash,
+                Token::Modulo,
+                Token::Assign,
+            ],
+        );
     }
 
     #[test]
@@ -33,133 +37,82 @@ mod tests {
 
     #[test]
     fn test_comments_and_operators() {
-        let input = String::from("// Comment\n++");
-        let lexer = Lexer::new(input);
-
-        let detected_tokens: Vec<Token> = vec![Token::Plus, Token::Plus];
-
-        let mut i: usize = 0;
-        for token in lexer {
-            assert_eq!(token, detected_tokens[i]);
-            i += 1;
-        }
-
-        assert_eq!(i, detected_tokens.len());
+        assert_tokens("// Comment\n++", vec![Token::Plus, Token::Plus]);
     }
 
     #[test]
     fn test_symbols() {
-        let input = String::from("() {} , # \" |");
-        let lexer = Lexer::new(input);
-
-        let detected_tokens: Vec<Token> = vec![
-            Token::LeftParen,
-            Token::RightParen,
-            Token::LeftBrace,
-            Token::RightBrace,
-            Token::Comma,
-            Token::Hashtag,
-            Token::DoubleQuote,
-            Token::Pipe,
-        ];
-
-        println!("\n\n");
-
-        let mut i: usize = 0;
-        for token in lexer {
-            assert_eq!(token, detected_tokens[i]);
-            i += 1;
-        }
-
-        println!("\n\n");
+        assert_tokens(
+            "() {} , # \" |",
+            vec![
+                Token::LeftParen,
+                Token::RightParen,
+                Token::LeftBrace,
+                Token::RightBrace,
+                Token::Comma,
+                Token::Hashtag,
+                Token::DoubleQuote,
+                Token::Pipe,
+            ],
+        );
     }
 
     #[test]
     fn test_equals() {
-        let input = String::from("!= , ==");
-        let lexer = Lexer::new(input);
-
-        let detected_tokens: Vec<Token> = vec![Token::NotEqual, Token::Comma, Token::Equal];
-
-        let mut i: usize = 0;
-        for token in lexer {
-            assert_eq!(token, detected_tokens[i]);
-            i += 1;
-        }
+        assert_tokens("!= , ==", vec![Token::NotEqual, Token::Comma, Token::Equal]);
     }
 
     #[test]
     fn test_keywords() {
-        let input = String::from("fn match if else ret for break continue");
-        let lexer = Lexer::new(input);
-
-        let detected_tokens: Vec<Token> = vec![
-            Token::Function,
-            Token::Match,
-            Token::If,
-            Token::Else,
-            Token::Return,
-            Token::For,
-            Token::Break,
-            Token::Continue,
-        ];
-
-        let mut i: usize = 0;
-        for token in lexer {
-            assert_eq!(token, detected_tokens[i]);
-            i += 1;
-        }
+        assert_tokens(
+            "fn match if else ret for break continue",
+            vec![
+                Token::Function,
+                Token::Match,
+                Token::If,
+                Token::Else,
+                Token::Return,
+                Token::For,
+                Token::Break,
+                Token::Continue,
+            ],
+        );
     }
 
     #[test]
     fn test_reading_identifier() {
-        let lexer = Lexer::new("fn foo() {}".to_string());
-
-        let detected_tokens: Vec<Token> = vec![
-            Token::Function,
-            Token::Identifier { name: "foo".to_string() },
-            Token::LeftParen,
-            Token::RightParen,
-            Token::LeftBrace,
-            Token::RightBrace,
-        ];
-
-        let mut i: usize = 0;
-        for token in lexer {
-            assert_eq!(token, detected_tokens[i]);
-            i += 1;
-        }
+        assert_tokens(
+            "fn foo() {}",
+            vec![
+                Token::Function,
+                Token::Identifier {
+                    name: "foo".to_string(),
+                },
+                Token::LeftParen,
+                Token::RightParen,
+                Token::LeftBrace,
+                Token::RightBrace,
+            ],
+        );
     }
 
     #[test]
     fn test_reading_random_identifiers() {
-        let lexer = Lexer::new("hello world".to_string());
-
-        let detected_tokens: Vec<Token> = vec![
-            Token::Identifier { name: "hello".to_string() },
-            Token::Identifier { name: "world".to_string() },
-        ];
-
-        let mut i: usize = 0;
-        for token in lexer {
-            assert_eq!(token, detected_tokens[i]);
-            i += 1;
-        }
+        assert_tokens(
+            "hello world",
+            vec![
+                Token::Identifier {
+                    name: "hello".to_string(),
+                },
+                Token::Identifier {
+                    name: "world".to_string(),
+                },
+            ],
+        );
     }
 
     #[test]
     fn testread_integer() {
-        let lexer = Lexer::new("123 456".to_string());
-
-        let detected_tokens: Vec<Token> = vec![
-            Token::Integer(123),
-            Token::Integer(456),
-        ];
-
-        let mut i: usize = 0;
-        for token in lexer {
-            assert_eq!(token, detected_tokens[i]);
-            i += 1;
-        }
+        assert_tokens("123 456", vec![Token::Integer(123), Token::Integer(456)]);
     }
 }

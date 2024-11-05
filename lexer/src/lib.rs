@@ -1,4 +1,8 @@
-use std::fmt::{self, Debug};
+use std::{
+    borrow::{Borrow, BorrowMut},
+    fmt::{self, Debug},
+    ops::Deref,
+};
 use token::Token;
 
 mod lexer_test;
@@ -96,12 +100,34 @@ impl Lexer {
             }
             ' ' | '\0' => Token::EOF,
             _ => {
-                return Err(format!("Illegal character detected {}", self.ch));
+                if self.ch.is_alphabetic() {
+                    return Ok(self.read_identifider())
+                } else {
+                    return Err(format!("Illegal character detected {}", self.ch));
+                }
             }
         };
 
         self.read_char();
         Ok(matched_token)
+    }
+
+    fn read_identifider(&mut self) -> Token {
+        let start = self.pos;
+
+        while self.ch.is_alphanumeric() || self.ch == '_' {
+            self.read_char();
+        }
+
+        let end = self.pos;
+
+        let identifier = self.input[start..end].to_string();
+
+        self.lookup_identifier(identifier)
+    }
+
+    fn is_numeric(&self, ch: char) -> bool {
+        ch >= '0' && ch <= '9'
     }
 
     fn skip_whitespace(&mut self) {
@@ -131,15 +157,20 @@ impl Lexer {
         }
     }
 
-    fn is_number(src: String) -> bool {
-        let c: u32 = src.chars().nth(0).unwrap() as u32;
-        let bounds = ('1' as u32, '9' as u32);
-
-        return c >= bounds.0 && c <= bounds.1;
-    }
-
-    fn is_alpha(src: String) -> bool {
-        return src.to_lowercase() != src.to_uppercase();
+    fn lookup_identifier(&mut self, ident: String) -> Token {
+        match ident.as_str() {
+            "fn" => Token::Function,
+            "match" => Token::Match,
+            "if" => Token::If,
+            "else" => Token::Else,
+            "ret" => Token::Return,
+            "for" => Token::For,
+            "break" => Token::Break,
+            "continue" => Token::Continue,
+            _ => Token::Identifier {
+                name: ident.to_string(),
+            },
+        }
     }
 }
 

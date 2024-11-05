@@ -32,10 +32,9 @@ pub enum Token {
 
     // Keywords
     Function,
-    Switch,
+    Match,
     If, 
     Else,
-    ElseIf,
     Return,
     For,
     Break,

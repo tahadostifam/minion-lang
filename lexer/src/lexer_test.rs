@@ -148,10 +148,18 @@ mod tests {
     }
 
     #[test]
-    fn test_is_numeric() {
-        let lexer = Lexer::new("".to_string());
-        assert_eq!(lexer.is_numeric('1'), true);
-        assert_eq!(lexer.is_numeric('9'), true);
-        assert_eq!(lexer.is_numeric('a'), false);
+    fn testread_integer() {
+        let lexer = Lexer::new("123 456".to_string());
+
+        let detected_tokens: Vec<Token> = vec![
+            Token::Integer(123),
+            Token::Integer(456),
+        ];
+
+        let mut i: usize = 0;
+        for token in lexer {
+            assert_eq!(token, detected_tokens[i]);
+            i += 1;
+        }
     }
 }

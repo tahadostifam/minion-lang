@@ -101,7 +101,9 @@ impl Lexer {
             ' ' | '\0' => Token::EOF,
             _ => {
                 if self.ch.is_alphabetic() {
-                    return Ok(self.read_identifider())
+                    return Ok(self.read_identifider());
+                } else if self.is_numeric(self.ch) {
+                    return Ok(self.read_integer()); 
                 } else {
                     return Err(format!("Illegal character detected {}", self.ch));
                 }
@@ -124,6 +126,23 @@ impl Lexer {
         let identifier = self.input[start..end].to_string();
 
         self.lookup_identifier(identifier)
+    }
+
+    fn read_integer(&mut self) -> Token {
+        let start = self.pos;
+
+        while self.is_numeric(self.ch) {
+            self.read_char();
+        }
+
+        let end = self.pos;
+
+        let identifier: i32 = self.input[start..end]
+            .to_string()
+            .parse()
+            .expect("expected identifier to be a number but it's something unknown");
+
+        Token::Integer(identifier)
     }
 
     fn is_numeric(&self, ch: char) -> bool {

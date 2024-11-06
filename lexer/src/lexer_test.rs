@@ -81,6 +81,28 @@ mod tests {
     }
 
     #[test]
+    fn test_less_greaters() {
+        assert_tokens(
+            "<= >=",
+            vec![
+                Token::LessEqual,
+                Token::GreaterEqual,
+            ],
+        );
+    }
+    
+    #[test]
+    fn test_and_or() {
+        assert_tokens(
+            "&& ||",
+            vec![
+                Token::And,
+                Token::Or,
+            ],
+        );
+    }
+
+    #[test]
     fn test_reading_identifier() {
         assert_tokens(
             "fn foo() {}",

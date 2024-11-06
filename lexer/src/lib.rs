@@ -8,7 +8,7 @@ pub struct Lexer {
     input: String,
     pos: usize,
     next_pos: usize,
-    ch: char
+    ch: char,
 }
 
 impl Lexer {
@@ -70,7 +70,6 @@ impl Lexer {
             ',' => Token::Comma,
             '#' => Token::Hashtag,
             '"' => Token::DoubleQuote,
-            '|' => Token::Pipe,
             '=' => {
                 if self.peek_char() == '=' {
                     self.read_char(); // consume current equal sign
@@ -89,6 +88,46 @@ impl Lexer {
                 } else {
                     self.read_char(); // consume current equal sign
                     return Ok(Token::Bang);
+                }
+            }
+            '<' => {
+                if self.peek_char() == '=' {
+                    self.read_char();
+                    self.read_char();
+                    return Ok(Token::LessEqual);
+                } else {
+                    self.read_char(); 
+                    return Ok(Token::LessThan);
+                }
+            }
+            '>' => {
+                if self.peek_char() == '=' {
+                    self.read_char();
+                    self.read_char();
+                    return Ok(Token::GreaterEqual);
+                } else {
+                    self.read_char(); 
+                    return Ok(Token::GreaterThan);
+                }
+            }
+            '&' => {
+                if self.peek_char() == '&' {
+                    self.read_char();
+                    self.read_char();
+                    return Ok(Token::And);
+                } else {
+                    self.read_char(); 
+                    return Ok(Token::Ampersand);
+                }
+            }
+            '|' => {
+                if self.peek_char() == '|' {
+                    self.read_char();
+                    self.read_char();
+                    return Ok(Token::Or);
+                } else {
+                    self.read_char(); 
+                    return Ok(Token::Pipe);
                 }
             }
             ' ' | '\0' => Token::EOF,

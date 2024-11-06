@@ -1,14 +1,15 @@
 #[cfg(test)]
 mod tests {
-    use token::Token;
     use crate::Lexer;
+    use token::TokenKind;
 
-    fn assert_tokens(input: &str, expected_tokens: Vec<Token>) {
+    fn assert_tokens(input: &str, expected_tokens: Vec<TokenKind>) {
         let lexer = Lexer::new(input.to_string());
 
         let mut i: usize = 0;
         for token in lexer {
-            assert_eq!(token, expected_tokens[i]);
+            println!("{:?}", token);
+            assert_eq!(token.kind, expected_tokens[i]);
             i += 1;
         }
     }
@@ -18,12 +19,12 @@ mod tests {
         assert_tokens(
             "+ - * / % =",
             vec![
-                Token::Plus,
-                Token::Minus,
-                Token::Asterisk,
-                Token::Slash,
-                Token::Modulo,
-                Token::Assign,
+                TokenKind::Plus,
+                TokenKind::Minus,
+                TokenKind::Asterisk,
+                TokenKind::Slash,
+                TokenKind::Modulo,
+                TokenKind::Assign,
             ],
         );
     }
@@ -38,7 +39,7 @@ mod tests {
 
     #[test]
     fn test_comments_and_operators() {
-        assert_tokens("// Comment\n++", vec![Token::Plus, Token::Plus]);
+        assert_tokens("// Comment\n++", vec![TokenKind::Plus, TokenKind::Plus]);
     }
 
     #[test]
@@ -46,21 +47,24 @@ mod tests {
         assert_tokens(
             "() {} , # \" |",
             vec![
-                Token::LeftParen,
-                Token::RightParen,
-                Token::LeftBrace,
-                Token::RightBrace,
-                Token::Comma,
-                Token::Hashtag,
-                Token::DoubleQuote,
-                Token::Pipe,
+                TokenKind::LeftParen,
+                TokenKind::RightParen,
+                TokenKind::LeftBrace,
+                TokenKind::RightBrace,
+                TokenKind::Comma,
+                TokenKind::Hashtag,
+                TokenKind::DoubleQuote,
+                TokenKind::Pipe,
             ],
         );
     }
 
     #[test]
     fn test_equals() {
-        assert_tokens("!= , ==", vec![Token::NotEqual, Token::Comma, Token::Equal]);
+        assert_tokens(
+            "!= , ==",
+            vec![TokenKind::NotEqual, TokenKind::Comma, TokenKind::Equal],
+        );
     }
 
     #[test]
@@ -68,38 +72,26 @@ mod tests {
         assert_tokens(
             "fn match if else ret for break continue",
             vec![
-                Token::Function,
-                Token::Match,
-                Token::If,
-                Token::Else,
-                Token::Return,
-                Token::For,
-                Token::Break,
-                Token::Continue,
+                TokenKind::Function,
+                TokenKind::Match,
+                TokenKind::If,
+                TokenKind::Else,
+                TokenKind::Return,
+                TokenKind::For,
+                TokenKind::Break,
+                TokenKind::Continue,
             ],
         );
     }
 
     #[test]
     fn test_less_greaters() {
-        assert_tokens(
-            "<= >=",
-            vec![
-                Token::LessEqual,
-                Token::GreaterEqual,
-            ],
-        );
+        assert_tokens("<= >=", vec![TokenKind::LessEqual, TokenKind::GreaterEqual]);
     }
-    
+
     #[test]
     fn test_and_or() {
-        assert_tokens(
-            "&& ||",
-            vec![
-                Token::And,
-                Token::Or,
-            ],
-        );
+        assert_tokens("&& ||", vec![TokenKind::And, TokenKind::Or]);
     }
 
     #[test]
@@ -107,14 +99,14 @@ mod tests {
         assert_tokens(
             "fn foo() {}",
             vec![
-                Token::Function,
-                Token::Identifier {
+                TokenKind::Function,
+                TokenKind::Identifier {
                     name: "foo".to_string(),
                 },
-                Token::LeftParen,
-                Token::RightParen,
-                Token::LeftBrace,
-                Token::RightBrace,
+                TokenKind::LeftParen,
+                TokenKind::RightParen,
+                TokenKind::LeftBrace,
+                TokenKind::RightBrace,
             ],
         );
     }
@@ -124,10 +116,10 @@ mod tests {
         assert_tokens(
             "hello world",
             vec![
-                Token::Identifier {
+                TokenKind::Identifier {
                     name: "hello".to_string(),
                 },
-                Token::Identifier {
+                TokenKind::Identifier {
                     name: "world".to_string(),
                 },
             ],
@@ -136,6 +128,9 @@ mod tests {
 
     #[test]
     fn testread_integer() {
-        assert_tokens("123 456", vec![Token::Integer(123), Token::Integer(456)]);
+        assert_tokens(
+            "123 456",
+            vec![TokenKind::Integer(123), TokenKind::Integer(456)],
+        );
     }
 }

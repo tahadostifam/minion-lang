@@ -1,5 +1,5 @@
 use std::fmt::{self, Debug};
-use token::Token;
+use token::{Span, Token, TokenKind};
 
 mod lexer_test;
 
@@ -57,96 +57,139 @@ impl Lexer {
         self.skip_whitespace();
         self.skip_comments();
 
-        let matched_token = match self.ch {
-            '+' => Token::Plus,
-            '-' => Token::Minus,
-            '*' => Token::Asterisk,
-            '/' => Token::Slash,
-            '%' => Token::Modulo,
-            '(' => Token::LeftParen,
-            ')' => Token::RightParen,
-            '{' => Token::LeftBrace,
-            '}' => Token::RightBrace,
-            ',' => Token::Comma,
-            '#' => Token::Hashtag,
-            '"' => Token::DoubleQuote,
+        let token_kind = match self.ch {
+            '+' => TokenKind::Plus,
+            '-' => TokenKind::Minus,
+            '*' => TokenKind::Asterisk,
+            '/' => TokenKind::Slash,
+            '%' => TokenKind::Modulo,
+            '(' => TokenKind::LeftParen,
+            ')' => TokenKind::RightParen,
+            '{' => TokenKind::LeftBrace,
+            '}' => TokenKind::RightBrace,
+            ',' => TokenKind::Comma,
+            '#' => TokenKind::Hashtag,
+            '"' => TokenKind::DoubleQuote,
             '=' => {
                 if self.peek_char() == '=' {
                     self.read_char(); // consume current equal sign
                     self.read_char(); // consume peeked equal sign
-                    return Ok(Token::Equal);
+                    return Ok(Token { kind: TokenKind::Equal, span: Span {
+                        start: self.pos - 2,
+                        end: self.pos,
+                    } });
                 } else {
                     self.read_char(); // consume current equal sign
-                    return Ok(Token::Assign);
+                    return Ok(Token { kind: TokenKind::Assign, span: Span {
+                        start: self.pos - 1,
+                        end: self.pos - 1,
+                    } });
                 }
             }
             '!' => {
                 if self.peek_char() == '=' {
                     self.read_char();
                     self.read_char();
-                    return Ok(Token::NotEqual);
+                    return Ok(Token { kind: TokenKind::NotEqual, span: Span {
+                        start: self.pos - 2,
+                        end: self.pos,
+                    } });
                 } else {
                     self.read_char(); // consume current equal sign
-                    return Ok(Token::Bang);
+                    return Ok(Token { kind: TokenKind::Bang, span: Span {
+                        start: self.pos - 1,
+                        end: self.pos - 1,
+                    } });
                 }
             }
             '<' => {
                 if self.peek_char() == '=' {
                     self.read_char();
                     self.read_char();
-                    return Ok(Token::LessEqual);
+                    return Ok(Token { kind: TokenKind::LessEqual, span: Span {
+                        start: self.pos - 2,
+                        end: self.pos,
+                    } });
                 } else {
                     self.read_char(); 
-                    return Ok(Token::LessThan);
+                    return Ok(Token { kind: TokenKind::LessThan, span: Span {
+                        start: self.pos - 1,
+                        end: self.pos - 1,
+                    } });
                 }
             }
             '>' => {
                 if self.peek_char() == '=' {
                     self.read_char();
                     self.read_char();
-                    return Ok(Token::GreaterEqual);
+                    return Ok(Token { kind: TokenKind::GreaterEqual, span: Span {
+                        start: self.pos - 2,
+                        end: self.pos,
+                    } });
                 } else {
                     self.read_char(); 
-                    return Ok(Token::GreaterThan);
+                    return Ok(Token { kind: TokenKind::GreaterThan, span: Span {
+                        start: self.pos - 1,
+                        end: self.pos - 1,
+                    } });
                 }
             }
             '&' => {
                 if self.peek_char() == '&' {
                     self.read_char();
                     self.read_char();
-                    return Ok(Token::And);
+                    return Ok(Token { kind: TokenKind::And, span: Span {
+                        start: self.pos - 2,
+                        end: self.pos,
+                    } });
                 } else {
                     self.read_char(); 
-                    return Ok(Token::Ampersand);
+                    return Ok(Token { kind: TokenKind::Ampersand, span: Span {
+                        start: self.pos - 1,
+                        end: self.pos - 1,
+                    } });
                 }
             }
             '|' => {
                 if self.peek_char() == '|' {
                     self.read_char();
                     self.read_char();
-                    return Ok(Token::Or);
+                    return Ok(Token { kind: TokenKind::Or, span: Span {
+                        start: self.pos - 2,
+                        end: self.pos,
+                    } });
                 } else {
                     self.read_char(); 
-                    return Ok(Token::Pipe);
+                    return Ok(Token { kind: TokenKind::Pipe, span: Span {
+                        start: self.pos - 1,
+                        end: self.pos - 1,
+                    } });
                 }
             }
-            ' ' | '\0' => Token::EOF,
+            ' ' | '\0' => {
+                return Ok(Token { kind: TokenKind::EOF, span: Span { start: self.pos, end: self.pos } })
+            },
             _ => {
+                let start = self.pos;
+
                 if self.ch.is_alphabetic() {
-                    return Ok(self.read_identifider());
+                    return Ok(Token { kind: self.read_identifider(), span: Span { start, end: self.pos } });
                 } else if self.is_numeric(self.ch) {
-                    return Ok(self.read_integer());
+                    return Ok(Token { kind: self.read_integer(), span: Span { start, end: self.pos } });
                 } else {
                     return Err(format!("Illegal character detected {}", self.ch));
                 }
             }
-        };
+            };
 
         self.read_char();
-        Ok(matched_token)
+        Ok(Token { kind: token_kind, span: Span {
+            start: self.pos - 1,
+            end: self.pos - 1,
+        } })
     }
 
-    fn read_identifider(&mut self) -> Token {
+    fn read_identifider(&mut self) -> TokenKind {
         let start = self.pos;
 
         while self.ch.is_alphanumeric() || self.ch == '_' {
@@ -160,7 +203,7 @@ impl Lexer {
         self.lookup_identifier(identifier)
     }
 
-    fn read_integer(&mut self) -> Token {
+    fn read_integer(&mut self) -> TokenKind {
         let start = self.pos;
 
         while self.is_numeric(self.ch) {
@@ -174,7 +217,7 @@ impl Lexer {
             .parse()
             .expect("expected identifier to be a number but it's something unknown");
 
-        Token::Integer(identifier)
+        TokenKind::Integer(identifier)
     }
 
     fn is_numeric(&self, ch: char) -> bool {
@@ -208,17 +251,17 @@ impl Lexer {
         }
     }
 
-    fn lookup_identifier(&mut self, ident: String) -> Token {
+    fn lookup_identifier(&mut self, ident: String) -> TokenKind {
         match ident.as_str() {
-            "fn" => Token::Function,
-            "match" => Token::Match,
-            "if" => Token::If,
-            "else" => Token::Else,
-            "ret" => Token::Return,
-            "for" => Token::For,
-            "break" => Token::Break,
-            "continue" => Token::Continue,
-            _ => Token::Identifier {
+            "fn" => TokenKind::Function,
+            "match" => TokenKind::Match,
+            "if" => TokenKind::If,
+            "else" => TokenKind::Else,
+            "ret" => TokenKind::Return,
+            "for" => TokenKind::For,
+            "break" => TokenKind::Break,
+            "continue" => TokenKind::Continue,
+            _ => TokenKind::Identifier {
                 name: ident.to_string(),
             },
         }
@@ -232,7 +275,7 @@ impl Iterator for Lexer {
         match self.next_token() {
             Err(str) => panic!("{}", str),
             Ok(token) => {
-                if token == Token::EOF {
+                if token.kind == TokenKind::EOF {
                     return None;
                 }
 

@@ -1,7 +1,13 @@
-use std::fmt::{self, write};
+use std::fmt;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub enum Token {
+pub struct Token {
+    pub kind: TokenKind,
+    pub span: Span,
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub enum TokenKind {
     Illegal,
     EOF,
     Identifier { name: String },
@@ -51,7 +57,7 @@ pub enum Token {
     Continue,
 }
 
-impl fmt::Display for Token {
+impl fmt::Display for TokenKind {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Identifier { name } => write!(f, "{}", name),
@@ -99,7 +105,7 @@ impl fmt::Display for Token {
 
 // Span essentially pinpoints the token's exact location within the source file.
 // That is really useful for error-reporting, syntax-hightlighting, and etc.
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Span {
     pub start: usize,
     pub end: usize,

@@ -17,6 +17,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "parser"
+version = "0.1.0"
+dependencies = [
+ "ast",
+ "lexer",
+ "token",
+]
+
+[[package]]
 name = "taha-lang"
 version = "0.1.0"
 

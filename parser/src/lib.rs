@@ -1,6 +1,7 @@
 use ast::{
     expression::{
-        BinaryExpression, Expression, Identifier, Integer, Literal, StringType, UnaryExpression,
+        BinaryExpression, Boolean, Expression, Identifier, Integer, Literal, StringType,
+        UnaryExpression,
     },
     program::Program,
     statement::Statement,
@@ -48,6 +49,16 @@ impl<'a> Parser<'a> {
         let mut parser = Parser::new(&mut lexer);
         let program = parser.parse_program()?;
         Ok(Node::Program(program))
+    }
+
+    // Parse statements (The main method of this struct actually)
+    fn parse_statement(&mut self) -> Result<Statement, ParseError> {
+        match self.current_token.kind {
+            // TODO - Implement IF STATEMENT
+            // TODO - Implement ELSE STATEMENT
+            // TODO - ...
+            _ => self.parse_expression_statement(),
+        }
     }
 
     // Private functionallities
@@ -101,14 +112,8 @@ impl<'a> Parser<'a> {
     }
 
     // Parse statements
-    fn parse_statement(&mut self) -> Result<Statement, ParseError> {
-        match self.current_token.kind {
-            // TODO - Implement IF STATEMENT
-            // TODO - Implement ELSE STATEMENT
-            // TODO - ...
-            _ => self.parse_expression_statement(),
-        }
-    }
+
+    fn if_statement(&mut self) {}
 
     fn parse_expression_statement(&mut self) -> Result<Statement, ParseError> {
         let expr = self.parse_expression(Precedence::Lowest)?.0;
@@ -121,6 +126,15 @@ impl<'a> Parser<'a> {
     }
 
     // Parse expressions
+    fn parse_bool_expression(&mut self, token_kind: TokenKind) -> Result<Expression, ParseError> {
+        let bool_literal = Expression::Literal(Literal::Boolean(Boolean {
+            raw: token_kind == TokenKind::True,
+            span: self.current_token.span.clone(),
+        }));
+
+        return Ok(bool_literal);
+    }
+
     fn parse_expression(
         &mut self,
         precedence: Precedence,
@@ -195,19 +209,15 @@ impl<'a> Parser<'a> {
                     },
                 })
             }
-
+            token_kind @ TokenKind::True | token_kind @ TokenKind::False => {
+                return self.parse_bool_expression(token_kind.clone());
+            }
             _ => {
                 return Err(format!(
                     "no prefix function found for the token: {}",
                     self.current_token.kind
                 ));
-            } // TODO - Implement boolean type here
-              // TODO - Implement IF STATEMENT
-              // TODO - Implement ELSE STATEMENT
-              // TODO - Implement FUNCTION STATEMENT
-              // TODO - Implement LEFT PARENT
-              // TODO - Implement LEFT BRACKET
-              // TODO - Implement LEFT BREACE
+            }
         };
 
         return Ok(expr);
@@ -223,14 +233,13 @@ impl<'a> Parser<'a> {
             | TokenKind::Minus
             | TokenKind::Asterisk
             | TokenKind::Slash
-            | TokenKind::Modulo 
+            | TokenKind::Modulo
             | TokenKind::Equal
             | TokenKind::NotEqual
             | TokenKind::LessEqual
             | TokenKind::LessThan
             | TokenKind::GreaterEqual
-            | TokenKind::GreaterThan
-            => {
+            | TokenKind::GreaterThan => {
                 self.next_token(); // consume the first part of the expression
 
                 let operator = self.current_token.clone();

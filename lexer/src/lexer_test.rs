@@ -24,6 +24,15 @@ mod tests {
     }
 
     #[test]
+    fn test_boolean_values() {
+        assert_tokens("true == false", vec![
+            TokenKind::True,
+            TokenKind::Equal,
+            TokenKind::False,
+        ], None);
+    }
+
+    #[test]
     fn test_operators() {
         assert_tokens(
             "+ - * / % =",

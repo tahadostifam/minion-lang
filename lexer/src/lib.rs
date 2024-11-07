@@ -76,7 +76,7 @@ impl Lexer {
                     self.read_char(); // consume peeked equal sign
                     return Ok(Token { kind: TokenKind::Equal, span: Span {
                         start: self.pos - 2,
-                        end: self.pos,
+                        end: self.pos - 1,
                     } });
                 } else {
                     self.read_char(); // consume current equal sign
@@ -92,7 +92,7 @@ impl Lexer {
                     self.read_char();
                     return Ok(Token { kind: TokenKind::NotEqual, span: Span {
                         start: self.pos - 2,
-                        end: self.pos,
+                        end: self.pos - 1,
                     } });
                 } else {
                     self.read_char(); // consume current equal sign
@@ -108,7 +108,7 @@ impl Lexer {
                     self.read_char();
                     return Ok(Token { kind: TokenKind::LessEqual, span: Span {
                         start: self.pos - 2,
-                        end: self.pos,
+                        end: self.pos - 1,
                     } });
                 } else {
                     self.read_char(); 
@@ -124,7 +124,7 @@ impl Lexer {
                     self.read_char();
                     return Ok(Token { kind: TokenKind::GreaterEqual, span: Span {
                         start: self.pos - 2,
-                        end: self.pos,
+                        end: self.pos - 1,
                     } });
                 } else {
                     self.read_char(); 
@@ -140,7 +140,7 @@ impl Lexer {
                     self.read_char();
                     return Ok(Token { kind: TokenKind::And, span: Span {
                         start: self.pos - 2,
-                        end: self.pos,
+                        end: self.pos - 1,
                     } });
                 } else {
                     self.read_char(); 
@@ -156,7 +156,7 @@ impl Lexer {
                     self.read_char();
                     return Ok(Token { kind: TokenKind::Or, span: Span {
                         start: self.pos - 2,
-                        end: self.pos,
+                        end: self.pos - 1,
                     } });
                 } else {
                     self.read_char(); 
@@ -173,9 +173,9 @@ impl Lexer {
                 let start = self.pos;
 
                 if self.ch.is_alphabetic() {
-                    return Ok(Token { kind: self.read_identifider(), span: Span { start, end: self.pos } });
+                    return Ok(Token { kind: self.read_identifider(), span: Span { start, end: self.pos - 1 } });
                 } else if self.is_numeric(self.ch) {
-                    return Ok(Token { kind: self.read_integer(), span: Span { start, end: self.pos } });
+                    return Ok(Token { kind: self.read_integer(), span: Span { start, end: self.pos - 1 } });
                 } else {
                     return Err(format!("Illegal character detected {}", self.ch));
                 }

@@ -198,7 +198,7 @@ impl<'a> Parser<'a> {
 
             _ => {
                 return Err(format!(
-                    "No prefix function found for the token: {}",
+                    "no prefix function found for the token: {}",
                     self.current_token.kind
                 ));
             } // TODO - Implement boolean type here

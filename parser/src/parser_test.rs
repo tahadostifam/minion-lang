@@ -5,8 +5,8 @@ mod tests {
 
     #[test]
     fn test_parser_simple_expression() {
-        let program = Parser::parse("-1").unwrap();
+        let program = Parser::parse("hello").unwrap();
 
-        println!("{:?}", program);
+        println!("{:#?}", program);
     }
 }

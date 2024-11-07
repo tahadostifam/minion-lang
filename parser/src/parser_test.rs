@@ -5,7 +5,7 @@ mod tests {
 
     #[test]
     fn test_parser_simple_expression() {
-        let program = Parser::parse("hello").unwrap();
+        let program = Parser::parse("1 == 1").unwrap();
 
         println!("{:#?}", program);
     }

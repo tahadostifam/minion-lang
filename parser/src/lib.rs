@@ -1,5 +1,7 @@
 use ast::{
-    expression::{Expression, Identifier, Integer, Literal, StringType, UnaryExpression},
+    expression::{
+        BinaryExpression, Expression, Identifier, Integer, Literal, StringType, UnaryExpression,
+    },
     program::Program,
     statement::Statement,
     Node,
@@ -163,8 +165,6 @@ impl<'a> Parser<'a> {
     fn parse_prefix_expression(&mut self) -> Result<Expression, ParseError> {
         let span = self.current_token.span.clone();
 
-        println!("taha -> {}", self.current_token.kind);
-
         let expr = match &self.current_token.kind {
             TokenKind::Identifier { name } => Expression::Identifier(Identifier {
                 name: name.clone(),
@@ -218,6 +218,41 @@ impl<'a> Parser<'a> {
         left: Expression,
         left_start: usize,
     ) -> Option<Result<Expression, ParseError>> {
-        todo!()
+        match self.peek_token.kind {
+            TokenKind::Plus
+            | TokenKind::Minus
+            | TokenKind::Asterisk
+            | TokenKind::Slash
+            | TokenKind::Modulo 
+            | TokenKind::Equal
+            | TokenKind::NotEqual
+            | TokenKind::LessEqual
+            | TokenKind::LessThan
+            | TokenKind::GreaterEqual
+            | TokenKind::GreaterThan
+            => {
+                self.next_token(); // consume the first part of the expression
+
+                let operator = self.current_token.clone();
+                let precedence = determine_token_precedence(self.current_token.kind.clone());
+
+                self.next_token(); // consume the operator if the expression
+
+                let (right, span) = self.parse_expression(precedence).unwrap();
+
+                Some(Ok(Expression::Infix(BinaryExpression {
+                    operator,
+                    left: Box::new(left),
+                    right: Box::new(right),
+                    span: Span {
+                        start: left_start,
+                        end: span.end,
+                    },
+                })))
+            }
+            // TODO - Implement function call expression parser
+            // TODO - Implement array index epxression parser
+            _ => None,
+        }
     }
 }

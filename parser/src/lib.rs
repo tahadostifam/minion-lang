@@ -4,7 +4,7 @@ use ast::{
         UnaryExpression,
     },
     program::Program,
-    statement::Statement,
+    statement::{Statement, Variable},
     Node,
 };
 use lexer::Lexer;
@@ -57,8 +57,33 @@ impl<'a> Parser<'a> {
             // TODO - Implement IF STATEMENT
             // TODO - Implement ELSE STATEMENT
             // TODO - ...
+            TokenKind::Hashtag => self.parse_variable_declaration(),
             _ => self.parse_expression_statement(),
         }
+    }
+
+    fn parse_variable_declaration(&mut self) -> Result<Statement, ParseError> {
+        let start = self.current_token.span.start;
+        self.next_token(); // consume sharp token
+
+        let identifier = self.current_token.clone(); // export the name of the identifier
+
+        self.expect_peek(TokenKind::Assign)?;
+
+        let (expr, span) = self.parse_expression(Precedence::Lowest)?;
+
+        if self.peek_token_is(TokenKind::Semicolon) {
+            self.next_token();
+        }
+
+        Ok(Statement::VariableDeclaration(Variable {
+            identifier,
+            expr,
+            span: Span {
+                start,
+                end: span.end,
+            },
+        }))
     }
 
     // Private functionallities
@@ -98,16 +123,16 @@ impl<'a> Parser<'a> {
         self.peek_token.kind == token_kind
     }
 
-    fn expect_peek(&mut self, token: Token) -> Result<(), ParseError> {
-        self.next_token();
-
-        if self.peek_token_is(token.kind.clone()) {
+    fn expect_peek(&mut self, token_kind: TokenKind) -> Result<(), ParseError> {
+        if self.peek_token_is(token_kind.clone()) {
+            self.next_token(); // consume current 
+            self.next_token(); // and expected token
             return Ok(());
         }
 
         return Err(format!(
-            "expected token: {}, but got :{}",
-            token.kind, self.peek_token.kind
+            "expected token: {}, but got {}",
+            token_kind, self.peek_token.kind
         ));
     }
 

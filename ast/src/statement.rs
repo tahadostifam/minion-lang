@@ -1,8 +1,11 @@
 use std::fmt;
-use crate::expression::{Expression, Literal};
+use token::{Span, Token};
+
+use crate::expression::Expression;
 
 #[derive(Debug)]
 pub enum Statement {
+    VariableDeclaration(Variable),
     Expression(Expression),
 }
 
@@ -14,4 +17,11 @@ impl fmt::Display for Statement {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self)
     }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Variable {
+    pub identifier: Token,
+    pub expr: Expression,
+    pub span: Span,
 }

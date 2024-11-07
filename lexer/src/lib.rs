@@ -202,6 +202,7 @@ impl Lexer {
                     });
                 }
             }
+            ';' => TokenKind::Semicolon,
             ' ' | '\0' => {
                 return Ok(Token {
                     kind: TokenKind::EOF,

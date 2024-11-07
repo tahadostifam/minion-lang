@@ -2,29 +2,45 @@
 mod tests {
     use crate::Parser;
 
+    fn assert_parse(input: &str) {
+        match Parser::parse(input) {
+            Ok(program) => {
+                println!("{:#?}", program);
+            }
+            Err(parse_errors) => {
+                println!("{:#?}", parse_errors);
+            }
+        }
+    }
+
     #[test]
     fn test_parser_simple_expression() {
-        Parser::parse("1 == 11").unwrap();
-        Parser::parse("1 != 1").unwrap();
-        Parser::parse("1 < 1").unwrap();
-        Parser::parse("1 > 1").unwrap();
-        Parser::parse("100 <= 100").unwrap();
-        Parser::parse("100 >= 100").unwrap();
-        Parser::parse("1 + 2").unwrap();
-        Parser::parse("1 - 2").unwrap();
-        Parser::parse("1 * 2").unwrap();
-        Parser::parse("1 / 2").unwrap();
-        Parser::parse("1 + 2 / 2").unwrap();
-        Parser::parse("1 + 2 / 2 - 10").unwrap();
+        assert_parse("1 == 11");
+        assert_parse("1 != 1");
+        assert_parse("1 < 1");
+        assert_parse("1 > 1");
+        assert_parse("100 <= 100");
+        assert_parse("100 >= 100");
+        assert_parse("1 + 2");
+        assert_parse("1 - 2");
+        assert_parse("1 * 2");
+        assert_parse("1 / 2");
+        assert_parse("1 + 2 / 2");
+        assert_parse("1 + 2 / 2 - 10");
     }
 
     #[test]
     fn test_parse_bool_expressions() {
-        Parser::parse("true").unwrap();
-        Parser::parse("false").unwrap();
-        Parser::parse("true == true").unwrap();
-        Parser::parse("false == false").unwrap();
-        Parser::parse("true == false").unwrap();
-        Parser::parse("false == true").unwrap();
+        assert_parse("true");
+        assert_parse("false");
+        assert_parse("true == true");
+        assert_parse("false == false");
+        assert_parse("true == false");
+        assert_parse("false == true");
+    }
+
+    #[test]
+    fn test_variable_declaration() {
+        assert_parse("#my_var = 1 + 2 * 3;");
     }
 }

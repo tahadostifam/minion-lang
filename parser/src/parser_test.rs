@@ -43,4 +43,10 @@ mod tests {
     fn test_variable_declaration() {
         assert_parse("#my_var = 1 + 2 * 3;");
     }
+
+    #[test]
+    fn test_if_statement() {
+        let input  = "if (1 < 2) { 3 } else {}";
+        assert_parse(input);
+    }
 }

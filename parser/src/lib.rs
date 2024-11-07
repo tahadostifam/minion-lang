@@ -4,7 +4,7 @@ use ast::{
         UnaryExpression,
     },
     program::Program,
-    statement::{Statement, Variable},
+    statement::{BlockStatement, If, Return, Statement, Variable},
     Node,
 };
 use lexer::Lexer;
@@ -54,9 +54,7 @@ impl<'a> Parser<'a> {
     // Parse statements (The main method of this struct actually)
     fn parse_statement(&mut self) -> Result<Statement, ParseError> {
         match self.current_token.kind {
-            // TODO - Implement IF STATEMENT
-            // TODO - Implement ELSE STATEMENT
-            // TODO - ...
+            TokenKind::If => self.parse_if_statement(),
             TokenKind::Hashtag => self.parse_variable_declaration(),
             _ => self.parse_expression_statement(),
         }
@@ -125,7 +123,7 @@ impl<'a> Parser<'a> {
 
     fn expect_peek(&mut self, token_kind: TokenKind) -> Result<(), ParseError> {
         if self.peek_token_is(token_kind.clone()) {
-            self.next_token(); // consume current 
+            self.next_token(); // consume current
             self.next_token(); // and expected token
             return Ok(());
         }
@@ -137,8 +135,76 @@ impl<'a> Parser<'a> {
     }
 
     // Parse statements
+    fn parse_return_statement(&mut self) -> Result<Statement, ParseError> {
+        let start = self.current_token.span.start;
+        self.next_token(); // consume return token
 
-    fn if_statement(&mut self) {}
+        let argument = self.parse_expression(Precedence::Lowest)?.0;
+
+        if self.peek_token_is(TokenKind::Semicolon) {
+            self.next_token();
+        }
+
+        let end = self.current_token.span.end;
+
+        Ok(Statement::Return(Return {
+            argument,
+            span: Span { start, end },
+        }))
+    }
+
+    fn parse_block_statement(&mut self) -> Result<BlockStatement, ParseError> {
+        let start = self.current_token.span.start;
+        self.next_token();
+
+        let mut block_statement: Vec<Statement> = Vec::new();
+
+        while !self.current_token_is(TokenKind::RightBrace)
+            && !self.current_token_is(TokenKind::EOF)
+        {
+            let statement = self.parse_statement()?;
+            block_statement.push(statement);
+            self.next_token();
+        }
+
+        let end = self.current_token.span.end;
+
+        Ok(BlockStatement {
+            body: block_statement,
+            span: Span { start, end },
+        })
+    }
+
+    fn parse_if_statement(&mut self) -> Result<Statement, ParseError> {
+        let start = self.current_token.span.start;
+
+        // lets read the condition
+        self.expect_peek(TokenKind::LeftParen)?;
+        let (condition, _) = self.parse_expression(Precedence::Lowest)?;
+        self.expect_peek(TokenKind::RightParen)?;
+
+        // consequent stands for body of the if statement
+        let consequent = Box::new(self.parse_block_statement()?);
+
+        let alternate: Option<Box<BlockStatement>> = if self.peek_token_is(TokenKind::Else) {
+            self.next_token(); // consume else token
+
+            self.expect_peek(TokenKind::LeftBrace)?;
+
+            Some(Box::new(self.parse_block_statement()?))
+        } else {
+            None
+        };
+
+        let end = self.current_token.span.end;
+
+        Ok(Statement::If(If {
+            condition,
+            consequent,
+            alternate,
+            span: Span { start, end },
+        }))
+    }
 
     fn parse_expression_statement(&mut self) -> Result<Statement, ParseError> {
         let expr = self.parse_expression(Precedence::Lowest)?.0;

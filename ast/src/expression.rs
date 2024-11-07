@@ -1,25 +1,21 @@
 use core::fmt;
-
 use token::{Span, Token};
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 pub enum Expression {
     Identifier(Identifier),
     Literal(Literal),
     Prefix(UnaryExpression),
     Infix(BinaryExpression),
-    // Function,
-    // FunctionCall,
-    // TODO
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 pub struct Identifier {
     pub name: String,
     pub span: Span,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 pub enum Literal {
     Integer(Integer),
     Boolean(Boolean),
@@ -28,14 +24,14 @@ pub enum Literal {
     Hash(Hash),
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 pub struct UnaryExpression {
     pub operator: Token,
     pub operand: Box<Expression>,
     pub span: Span
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 pub struct BinaryExpression {
     pub operator: Token, 
     pub left: Box<Expression>,
@@ -43,31 +39,31 @@ pub struct BinaryExpression {
     pub span: Span,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 pub struct Integer {
     pub raw: i64,
     pub span: Span,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 pub struct Boolean {
     pub raw: bool,
     pub span: Span,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 pub struct StringType {
     pub raw: String,
     pub span: Span,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 pub struct Array {
     pub elements: Vec<Expression>,
     pub span: Span,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 pub struct Hash {
     pub pairs: Vec<(Expression, Expression)>,
     pub span: Span,

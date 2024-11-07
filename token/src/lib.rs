@@ -12,7 +12,7 @@ pub enum TokenKind {
     EOF,
     Identifier { name: String },
     Integer(i64),
-    Str(String),
+    String(String),
 
     // Operators
     Plus,
@@ -45,6 +45,8 @@ pub enum TokenKind {
     GreaterEqual,
     And,
     Or,
+    True,
+    False,
 
     // Keywords
     Function,
@@ -62,7 +64,7 @@ impl fmt::Display for TokenKind {
         match self {
             Self::Identifier { name } => write!(f, "{}", name),
             Self::Integer(value) => write!(f, "{}", value),
-            Self::Str(value) => write!(f, "{}", value),
+            Self::String(value) => write!(f, "{}", value),
             Self::Plus => write!(f, "+"),
             Self::Minus => write!(f, "-"),
             Self::Asterisk => write!(f, "*"),
@@ -96,6 +98,8 @@ impl fmt::Display for TokenKind {
             Self::For => write!(f, "for"),
             Self::Break => write!(f, "break"),
             Self::Continue => write!(f, "continue"),
+            Self::True => write!(f, "true"),
+            Self::False => write!(f, "false"),
             Self::Illegal => write!(f, "ILLEGAL"),
             Self::EOF => write!(f, "EOF"),
             _ => write!(f, "INVALID_TOKEN"),

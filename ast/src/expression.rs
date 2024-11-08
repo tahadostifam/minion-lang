@@ -1,8 +1,6 @@
 use core::fmt;
 use token::{Span, Token};
 
-use crate::statement::BlockStatement;
-
 #[derive(Debug, Clone)]
 pub enum Expression {
     Identifier(Identifier),
@@ -14,7 +12,7 @@ pub enum Expression {
 
 #[derive(Debug, Clone)]
 pub struct FunctionCall { 
-    pub function_name: String,
+    pub call: Box<Expression>,
     pub arguments: Vec<Expression>,
     pub span: Span
 }

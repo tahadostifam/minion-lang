@@ -1,7 +1,6 @@
 use ast::{
     expression::{
-        BinaryExpression, Boolean, Expression, Identifier, Integer, Literal, StringType,
-        UnaryExpression,
+        BinaryExpression, Boolean, Expression, FunctionCall, Identifier, Integer, Literal, StringType, UnaryExpression
     },
     program::Program,
     statement::{BlockStatement, Function, If, Return, Statement, Variable},
@@ -372,7 +371,17 @@ impl<'a> Parser<'a> {
     }
 
     // Parse expressions
-    fn parse_function_call_expression(&mut self) {} // ANCHOR
+    fn parse_function_call_expression(&mut self, left: Expression, left_start: usize) -> Result<Expression, ParseError>{
+        let arguments = self.parse_expression_series(TokenKind::RightParen)?;
+
+        let end = self.current_token.span.end;
+
+        Ok(Expression::FunctionCall(FunctionCall {
+            call: Box::new(left),
+            arguments: arguments.0,
+            span: Span { start: left_start, end },
+        }))
+    } 
 
     fn parse_bool_expression(&mut self, token_kind: TokenKind) -> Result<Expression, ParseError> {
         let bool_literal = Expression::Literal(Literal::Boolean(Boolean {
@@ -507,7 +516,12 @@ impl<'a> Parser<'a> {
                     },
                 })))
             }
-            // TODO - Implement function call expression parser
+            
+            TokenKind::LeftParen => {
+                self.next_token(); // consume the identifier token
+                return Some(self.parse_function_call_expression(left, left_start));
+            }
+
             // TODO - Implement array index epxression parser
             _ => None,
         }

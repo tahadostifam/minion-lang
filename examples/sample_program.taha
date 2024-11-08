@@ -16,7 +16,7 @@ fn divide(num1, num2) {
 }
 
 // Calling function
-sum(a, b);
+divide(a, b);
 
 
 for #i = 0; i < 10; i++; {

@@ -43,8 +43,8 @@ impl<'a> Parser<'a> {
     }
 
     // Public methods
-    pub fn parse(input: &str) -> Result<Node, Vec<ParseError>> {
-        let mut lexer = Lexer::new(input.to_string());
+    pub fn parse(input: String) -> Result<Node, Vec<ParseError>> {
+        let mut lexer = Lexer::new(input);
         let mut parser = Parser::new(&mut lexer);
         let program = parser.parse_program()?;
         Ok(Node::Program(program))

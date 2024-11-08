@@ -6,7 +6,7 @@ mod tests {
     use crate::Parser;
 
     fn assert_parse(input: &str) {
-        match Parser::parse(input) {
+        match Parser::parse(input.to_string()) {
             Ok(program) => {
                 println!("{:#?}", program);
             }

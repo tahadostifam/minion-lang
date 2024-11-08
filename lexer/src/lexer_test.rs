@@ -34,6 +34,49 @@ mod tests {
     }
 
     #[test]
+    fn test_code_1() {
+        let code = "
+        if a == 2 { 
+            puts \"Hello World\";
+        }
+
+        puts();
+        ";
+
+        assert_tokens(code, None, None);
+    }
+
+    #[test]
+    fn test_code_2() {
+        let code = "
+        fn divide(num1, num2) {
+            if num2 == 0 {
+                throw \"devidide by zero is not possible\";
+            }
+
+            ret num1 / num2;
+        }
+
+        divide(10, 2);
+        ";
+
+        assert_tokens(code, None, None);
+    }
+
+    #[test]
+    fn test_code_3() {
+        let code = "// Here is sample for loop
+        for #i = 0; i < 10; i++; {
+            puts(\"i -> {i}\");
+        }";
+
+        // Array definition
+        // #names = [\"Taha\", \"Rust\", \"Ruby\", \"Go\", \"C#\"];
+
+        assert_tokens(code, None, None);
+    }
+
+    #[test]
     fn test_boolean_values() {
         assert_tokens(
             "true == false",
@@ -60,16 +103,20 @@ mod tests {
 
     #[test]
     fn test_comments() {
-        let input = String::from("// This is a comment! :)");
-        let mut lexer = Lexer::new(input);
-
-        lexer.next_token().unwrap();
+        assert_tokens(
+            "// Sample comments",
+            None,
+            None,
+        );
     }
 
     #[test]
     fn test_comments_and_operators() {
         assert_tokens(
-            "// Comment\n++",
+            "// Comment 
+            
+        ++",
+
             Some(&vec![TokenKind::Plus, TokenKind::Plus]),
             None,
         );
@@ -229,21 +276,42 @@ mod tests {
             "fn foo_bar(a, b) { ret a + b; }",
             Some(&vec![
                 TokenKind::Function,
-                TokenKind::Identifier { name: "foo_bar".to_string() },
+                TokenKind::Identifier {
+                    name: "foo_bar".to_string(),
+                },
                 TokenKind::LeftParen,
-                TokenKind::Identifier { name: "a".to_string() },
+                TokenKind::Identifier {
+                    name: "a".to_string(),
+                },
                 TokenKind::Comma,
-                TokenKind::Identifier { name: "b".to_string() },
+                TokenKind::Identifier {
+                    name: "b".to_string(),
+                },
                 TokenKind::RightParen,
                 TokenKind::LeftBrace,
                 TokenKind::Return,
-                TokenKind::Identifier { name: "a".to_string() },
+                TokenKind::Identifier {
+                    name: "a".to_string(),
+                },
                 TokenKind::Plus,
-                TokenKind::Identifier { name: "b".to_string() },
+                TokenKind::Identifier {
+                    name: "b".to_string(),
+                },
                 TokenKind::Semicolon,
                 TokenKind::RightBrace,
             ]),
             None,
         );
+    }
+
+    #[test]
+    fn is_whitespace() {
+        let input = " a 
+";
+
+        assert_eq!(Lexer::is_whitespace(input.chars().nth(0).unwrap()), true);
+        assert_eq!(Lexer::is_whitespace(input.chars().nth(1).unwrap()), false);
+        assert_eq!(Lexer::is_whitespace(input.chars().nth(2).unwrap()), true);
+        assert_eq!(Lexer::is_whitespace(input.chars().nth(3).unwrap()), true);
     }
 }

@@ -14,7 +14,7 @@ pub struct Lexer {
 impl Lexer {
     pub fn new(input: String) -> Self {
         let mut lexer = Self {
-            input: input,
+            input: input.trim().to_string(),
             pos: 0,      // points to current position
             next_pos: 0, // points to next position
             ch: ' ',
@@ -57,7 +57,20 @@ impl Lexer {
         self.skip_whitespace();
         self.skip_comments();
 
+        if self.is_eof() {
+            return Ok(Token {
+                kind: TokenKind::EOF,
+                span: Span {
+                    start: self.pos,
+                    end: self.pos,
+                },
+            });
+        }
+
         let token_kind = match self.ch {
+            ' ' => {
+                return self.next_token()
+            }
             '+' => TokenKind::Plus,
             '-' => TokenKind::Minus,
             '*' => TokenKind::Asterisk,
@@ -205,15 +218,6 @@ impl Lexer {
                 }
             }
             ';' => TokenKind::Semicolon,
-            ' ' | '\0' => {
-                return Ok(Token {
-                    kind: TokenKind::EOF,
-                    span: Span {
-                        start: self.pos,
-                        end: self.pos,
-                    },
-                })
-            }
             _ => {
                 // Reading identifiers and integers is happening here
                 let start = self.pos;
@@ -235,7 +239,10 @@ impl Lexer {
                         },
                     });
                 } else {
-                    return Err(format!("Illegal character detected {}", self.ch));
+                    #[cfg(test)]
+                    dbg!(self.clone());
+
+                    return Err(format!("Illegal character detected '{}'", self.ch));
                 }
             }
         };
@@ -285,8 +292,20 @@ impl Lexer {
         ch >= '0' && ch <= '9'
     }
 
+    fn is_eof(&mut self) -> bool {
+        self.pos == self.input.len()
+    }
+
+    fn is_whitespace(ch: char) -> bool{
+        ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r'
+    }
+
     fn skip_whitespace(&mut self) {
-        if self.ch == ' ' || self.ch == '\t' || self.ch == '\n' || self.ch == '\r' {
+        while Self::is_whitespace(self.ch) {
+            if self.is_eof() {
+                break;
+            }
+
             self.read_char();
         }
     }
@@ -297,17 +316,15 @@ impl Lexer {
             self.read_char(); // consume double slash
 
             loop {
-                // lets consume the comment :>
-                if self.ch == '\n' || self.ch == '\u{0}' || self.pos == self.input.len() {
-                    // consume the comments end
-                    if self.ch == '\n' {
-                        self.read_char();
-                    }
-
+                if self.is_eof() || self.ch == '\n' {
                     break;
                 }
 
                 self.read_char(); // consume
+            }
+
+            if self.ch == '\n' { // consume the new line char
+                self.read_char();
             }
         }
     }

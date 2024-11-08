@@ -28,6 +28,9 @@ dependencies = [
 [[package]]
 name = "taha-lang"
 version = "0.1.0"
+dependencies = [
+ "parser",
+]
 
 [[package]]
 name = "token"

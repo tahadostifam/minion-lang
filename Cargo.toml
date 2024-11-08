@@ -9,4 +9,7 @@ members = ["ast", "lexer", "parser", "token"]
 
 [[bin]]
 name = "taha"
-path = "./interpreter/main.rs"
+path = "./cli.rs"
+
+[dependencies]
+parser = { path = "./parser", version = "*" }

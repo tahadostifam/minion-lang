@@ -1,6 +1,7 @@
 #[cfg(test)]
 mod tests {
     use lexer::Lexer;
+    use token::TokenKind;
 
     use crate::Parser;
 
@@ -57,12 +58,21 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_params() {
+    fn test_parse_function_params() {
         let mut lexer = Lexer::new("(a, b, c)".to_string());
         let mut parser = Parser::new(&mut lexer);
-        let params = parser.parse_params();
+        let params = parser.parse_function_params();
 
         println!("{:#?}", params);
+    }
+    
+    #[test] 
+    fn test_parse_expression_series() {
+        let mut lexer = Lexer::new("[1, 2, 3, ]".to_string());
+        let mut parser = Parser::new(&mut lexer);
+        let params = parser.parse_expression_series(TokenKind::RightBracket).unwrap();
+
+        println!("{:#?}", params.0);
     }
 
     #[test]

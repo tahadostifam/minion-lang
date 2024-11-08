@@ -67,6 +67,8 @@ impl Lexer {
             ')' => TokenKind::RightParen,
             '{' => TokenKind::LeftBrace,
             '}' => TokenKind::RightBrace,
+            '[' => TokenKind::LeftBracket,
+            ']' => TokenKind::RightBracket,
             ',' => TokenKind::Comma,
             '#' => TokenKind::Hashtag,
             '"' => TokenKind::DoubleQuote,

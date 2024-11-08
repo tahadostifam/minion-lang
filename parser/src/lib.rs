@@ -147,7 +147,7 @@ impl<'a> Parser<'a> {
         ));
     }
 
-    fn parse_params(&mut self) -> Result<Vec<Identifier>, ParseError> {
+    fn parse_function_params(&mut self) -> Result<Vec<Identifier>, ParseError> {
         self.expect_current(TokenKind::LeftParen)?;
 
         let mut params: Vec<Identifier> = Vec::new();
@@ -193,6 +193,63 @@ impl<'a> Parser<'a> {
     }
 
     // Parse statements
+    fn parse_expression_series(
+        &mut self,
+        end: TokenKind,
+    ) -> Result<(Vec<Expression>, Span), ParseError> {
+        let start = self.current_token.span.start;
+        let mut series: Vec<Expression> = Vec::new();
+
+        // Detect empty series of expressions
+        if self.peek_token_is(end.clone()) {
+            self.next_token();
+
+            return Ok((
+                series,
+                Span {
+                    start,
+                    end: self.current_token.span.end,
+                },
+            ));
+        }
+
+        self.next_token(); // consume the starting token
+
+        series.push(self.parse_expression(Precedence::Lowest)?.0); // parse the first expression
+
+        // !self.peek_token_is(end.clone())
+        while self.peek_token_is(TokenKind::Comma) {
+            self.next_token(); // consume the current expression
+
+            if self.current_token_is(TokenKind::Comma) && self.peek_token_is(end.clone()) {
+                self.next_token(); // consume last comma 
+                break;
+            }
+
+            self.next_token(); // consume the comma
+
+            series.push(self.parse_expression(Precedence::Lowest)?.0);
+        }
+
+        if self.peek_token_is(end.clone()) {
+            self.next_token(); // consume the latest expression
+        }
+
+        if !self.current_token_is(end.clone()) {
+            return Err(format!(
+                "expected {} to close the expression series but got: {}",
+                end, self.current_token.kind
+            ))
+        }
+
+        Ok((
+            series,
+            Span {
+                start,
+                end: self.current_token.span.end,
+            },
+        ))
+    }
     fn parse_function_statement(&mut self) -> Result<Statement, ParseError> {
         let start = self.current_token.span.start;
 
@@ -209,7 +266,7 @@ impl<'a> Parser<'a> {
         }; // export the name of the function
         self.next_token(); // consume the name of the identifier
 
-        let params = self.parse_params()?;
+        let params = self.parse_function_params()?;
 
         // we used current_token_is because we don't want to consume it,
         // we pass this statement that is inside a brace to parse_block_statement.
@@ -315,7 +372,7 @@ impl<'a> Parser<'a> {
     }
 
     // Parse expressions
-    fn parse_function_call_expression(&mut self) {}
+    fn parse_function_call_expression(&mut self) {} // ANCHOR
 
     fn parse_bool_expression(&mut self, token_kind: TokenKind) -> Result<Expression, ParseError> {
         let bool_literal = Expression::Literal(Literal::Boolean(Boolean {

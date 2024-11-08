@@ -46,7 +46,16 @@ mod tests {
 
     #[test]
     fn test_if_statement() {
-        let input  = "if (1 < 2) { 3 } else {}";
-        assert_parse(input);
+        assert_parse("if (1 < 2) { 3 } else {}");
+    }
+
+    #[test]
+    fn test_return_statement() {
+        assert_parse("ret 1 + 2");
+    }
+
+    #[test]
+    fn test_function_statement() {
+        assert_parse("fn foo_bar(a, b) { ret a + b; }");
     }
 }

@@ -1,12 +1,22 @@
 use core::fmt;
 use token::{Span, Token};
 
+use crate::statement::BlockStatement;
+
 #[derive(Debug, Clone)]
 pub enum Expression {
     Identifier(Identifier),
     Literal(Literal),
     Prefix(UnaryExpression),
     Infix(BinaryExpression),
+    FunctionCall(FunctionCall),
+}
+
+#[derive(Debug, Clone)]
+pub struct FunctionCall { 
+    pub function_name: String,
+    pub arguments: Vec<Expression>,
+    pub span: Span
 }
 
 #[derive(Debug, Clone)]

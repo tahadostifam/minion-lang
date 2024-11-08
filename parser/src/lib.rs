@@ -1,10 +1,12 @@
+use std::fmt::format;
+
 use ast::{
     expression::{
         BinaryExpression, Boolean, Expression, Identifier, Integer, Literal, StringType,
         UnaryExpression,
     },
     program::Program,
-    statement::{BlockStatement, If, Return, Statement, Variable},
+    statement::{BlockStatement, Function, If, Return, Statement, Variable},
     Node,
 };
 use lexer::Lexer;
@@ -55,6 +57,8 @@ impl<'a> Parser<'a> {
     fn parse_statement(&mut self) -> Result<Statement, ParseError> {
         match self.current_token.kind {
             TokenKind::If => self.parse_if_statement(),
+            TokenKind::Function => self.parse_function_statement(),
+            TokenKind::Return => self.parse_return_statement(),
             TokenKind::Hashtag => self.parse_variable_declaration(),
             _ => self.parse_expression_statement(),
         }
@@ -123,18 +127,106 @@ impl<'a> Parser<'a> {
 
     fn expect_peek(&mut self, token_kind: TokenKind) -> Result<(), ParseError> {
         if self.peek_token_is(token_kind.clone()) {
-            self.next_token(); // consume current
-            self.next_token(); // and expected token
+            self.next_token(); // consume current token
             return Ok(());
         }
 
         return Err(format!(
-            "expected token: {}, but got {}",
+            "expected token: {} but got {}",
             token_kind, self.peek_token.kind
         ));
     }
 
+    fn expect_current(&mut self, token_kind: TokenKind) -> Result<(), ParseError> {
+        if self.current_token_is(token_kind.clone()) {
+            self.next_token(); // consume current token
+            return Ok(());
+        }
+
+        return Err(format!(
+            "expected token: {} but got {}",
+            token_kind, self.current_token.kind
+        ));
+    }
+
     // Parse statements
+    fn parse_function_statement(&mut self) -> Result<Statement, ParseError> {
+        let start = self.current_token.span.start;
+
+        self.next_token(); // consume the fn token
+
+        let function_name = match self.current_token.kind.clone() {
+            TokenKind::Identifier { name } => name,
+            _ => {
+                return Err(format!(
+                    "the name of the function can't be except an identifier but got: {}",
+                    self.current_token.kind
+                ))
+            }
+        }; // export the name of the function
+        self.next_token(); // consume the name of the identifier
+
+        self.expect_current(TokenKind::LeftParen)?; // the beginning of the params
+
+        let mut params: Vec<Identifier> = Vec::new();
+
+        while self.current_token.kind != TokenKind::RightParen {
+            match self.current_token.kind.clone() {
+                TokenKind::Identifier { name } => {
+                    params.push(Identifier {
+                        name,
+                        span: self.current_token.span.clone(),
+                    });
+
+                    match self.peek_token.kind {
+                        TokenKind::Comma => {
+                            self.next_token();
+                        }
+                        TokenKind::RightParen => {
+                            self.next_token();
+                            break;
+                        }
+                        _ => {
+                            return Err(format!(
+                                "expected a comma or the end of the parameters but got: {}",
+                                self.current_token.kind
+                            ))
+                        }
+                    }
+
+                    self.next_token(); // consume the current identifier
+                }
+                _ => {
+                    return Err(format!(
+                        "expected an identifier set as paramater of the function but got: {}",
+                        self.current_token.kind
+                    ))
+                }
+            }
+        }
+
+        self.expect_current(TokenKind::RightParen)?;
+
+        // we used current_token_is because we don't want to consume it,
+        // we pass this statement that is inside a brace to parse_block_statement.
+        if self.current_token_is(TokenKind::LeftBrace) {
+            let body = Box::new(self.parse_block_statement()?);
+
+            self.expect_current(TokenKind::RightBrace)?;
+
+            let end = self.current_token.span.end;
+
+            return Ok(Statement::Function(Function {
+                name: function_name,
+                params,
+                body,
+                span: Span { start, end },
+            }));
+        }
+
+        Err(format!("expected to close the block with a right brace."))
+    }
+
     fn parse_return_statement(&mut self) -> Result<Statement, ParseError> {
         let start = self.current_token.span.start;
         self.next_token(); // consume return token
@@ -185,6 +277,8 @@ impl<'a> Parser<'a> {
 
         // consequent stands for body of the if statement
         let consequent = Box::new(self.parse_block_statement()?);
+
+        // TODO - implement else if statements
 
         let alternate: Option<Box<BlockStatement>> = if self.peek_token_is(TokenKind::Else) {
             self.next_token(); // consume else token

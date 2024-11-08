@@ -222,4 +222,28 @@ mod tests {
             None,
         );
     }
+
+    #[test]
+    fn test_function_declaration() {
+        assert_tokens(
+            "fn foo_bar(a, b) { ret a + b; }",
+            Some(&vec![
+                TokenKind::Function,
+                TokenKind::Identifier { name: "foo_bar".to_string() },
+                TokenKind::LeftParen,
+                TokenKind::Identifier { name: "a".to_string() },
+                TokenKind::Comma,
+                TokenKind::Identifier { name: "b".to_string() },
+                TokenKind::RightParen,
+                TokenKind::LeftBrace,
+                TokenKind::Return,
+                TokenKind::Identifier { name: "a".to_string() },
+                TokenKind::Plus,
+                TokenKind::Identifier { name: "b".to_string() },
+                TokenKind::Semicolon,
+                TokenKind::RightBrace,
+            ]),
+            None,
+        );
+    }
 }

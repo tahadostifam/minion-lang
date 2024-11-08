@@ -1,5 +1,3 @@
-use std::fmt::format;
-
 use ast::{
     expression::{
         BinaryExpression, Boolean, Expression, Identifier, Integer, Literal, StringType,
@@ -149,24 +147,8 @@ impl<'a> Parser<'a> {
         ));
     }
 
-    // Parse statements
-    fn parse_function_statement(&mut self) -> Result<Statement, ParseError> {
-        let start = self.current_token.span.start;
-
-        self.next_token(); // consume the fn token
-
-        let function_name = match self.current_token.kind.clone() {
-            TokenKind::Identifier { name } => name,
-            _ => {
-                return Err(format!(
-                    "the name of the function can't be except an identifier but got: {}",
-                    self.current_token.kind
-                ))
-            }
-        }; // export the name of the function
-        self.next_token(); // consume the name of the identifier
-
-        self.expect_current(TokenKind::LeftParen)?; // the beginning of the params
+    fn parse_params(&mut self) -> Result<Vec<Identifier>, ParseError> {
+        self.expect_current(TokenKind::LeftParen)?;
 
         let mut params: Vec<Identifier> = Vec::new();
 
@@ -178,7 +160,7 @@ impl<'a> Parser<'a> {
                         span: self.current_token.span.clone(),
                     });
 
-                    match self.peek_token.kind {
+                    match &self.peek_token.kind {
                         TokenKind::Comma => {
                             self.next_token();
                         }
@@ -206,6 +188,28 @@ impl<'a> Parser<'a> {
         }
 
         self.expect_current(TokenKind::RightParen)?;
+
+        Ok(params)
+    }
+
+    // Parse statements
+    fn parse_function_statement(&mut self) -> Result<Statement, ParseError> {
+        let start = self.current_token.span.start;
+
+        self.next_token(); // consume the fn token
+
+        let function_name = match self.current_token.kind.clone() {
+            TokenKind::Identifier { name } => name,
+            _ => {
+                return Err(format!(
+                    "the name of the function can't be except an identifier but got: {}",
+                    self.current_token.kind
+                ))
+            }
+        }; // export the name of the function
+        self.next_token(); // consume the name of the identifier
+
+        let params = self.parse_params()?;
 
         // we used current_token_is because we don't want to consume it,
         // we pass this statement that is inside a brace to parse_block_statement.
@@ -311,6 +315,8 @@ impl<'a> Parser<'a> {
     }
 
     // Parse expressions
+    fn parse_function_call_expression(&mut self) {}
+
     fn parse_bool_expression(&mut self, token_kind: TokenKind) -> Result<Expression, ParseError> {
         let bool_literal = Expression::Literal(Literal::Boolean(Boolean {
             raw: token_kind == TokenKind::True,

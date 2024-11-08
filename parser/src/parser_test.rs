@@ -1,5 +1,7 @@
 #[cfg(test)]
 mod tests {
+    use lexer::Lexer;
+
     use crate::Parser;
 
     fn assert_parse(input: &str) {
@@ -52,6 +54,15 @@ mod tests {
     #[test]
     fn test_return_statement() {
         assert_parse("ret 1 + 2");
+    }
+
+    #[test]
+    fn test_parse_params() {
+        let mut lexer = Lexer::new("(a, b, c)".to_string());
+        let mut parser = Parser::new(&mut lexer);
+        let params = parser.parse_params();
+
+        println!("{:#?}", params);
     }
 
     #[test]

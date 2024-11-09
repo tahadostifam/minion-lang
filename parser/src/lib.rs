@@ -1,6 +1,9 @@
+use std::{borrow::Borrow, os};
+
 use ast::{
     expression::{
-        BinaryExpression, Boolean, Expression, FunctionCall, Identifier, Integer, Literal, StringType, UnaryExpression
+        BinaryExpression, Boolean, Expression, FunctionCall, Identifier, Integer, Literal,
+        StringType, UnaryExpression,
     },
     program::Program,
     statement::{BlockStatement, Function, If, Return, Statement, Variable},
@@ -15,6 +18,7 @@ mod precedences;
 
 type ParseError = String;
 
+#[derive(Debug)]
 pub struct Parser<'a> {
     lexer: &'a mut Lexer,
     current_token: Token,
@@ -221,7 +225,7 @@ impl<'a> Parser<'a> {
             self.next_token(); // consume the current expression
 
             if self.current_token_is(TokenKind::Comma) && self.peek_token_is(end.clone()) {
-                self.next_token(); // consume last comma 
+                self.next_token(); // consume last comma
                 break;
             }
 
@@ -238,7 +242,7 @@ impl<'a> Parser<'a> {
             return Err(format!(
                 "expected {} to close the expression series but got: {}",
                 end, self.current_token.kind
-            ))
+            ));
         }
 
         Ok((
@@ -327,34 +331,68 @@ impl<'a> Parser<'a> {
         })
     }
 
+    // ANCHOR
     fn parse_if_statement(&mut self) -> Result<Statement, ParseError> {
         let start = self.current_token.span.start;
 
-        // lets read the condition
-        self.expect_peek(TokenKind::LeftParen)?;
-        let (condition, _) = self.parse_expression(Precedence::Lowest)?;
-        self.expect_peek(TokenKind::RightParen)?;
+        self.expect_current(TokenKind::If)?;
+        self.expect_current(TokenKind::LeftParen)?;
 
-        // consequent stands for body of the if statement
+        let (condition, _) = self.parse_expression(Precedence::Lowest)?;
+
+        self.expect_peek(TokenKind::RightParen)?;
+        self.expect_peek(TokenKind::LeftBrace)?;
+
+        let mut branches: Vec<If> = Vec::new();
+        let mut alternate: Option<Box<BlockStatement>> = None;
+
         let consequent = Box::new(self.parse_block_statement()?);
 
-        // TODO - implement else if statements
+        self.expect_current(TokenKind::RightBrace)?;
 
-        let alternate: Option<Box<BlockStatement>> = if self.peek_token_is(TokenKind::Else) {
+        while self.current_token_is(TokenKind::Else) {
             self.next_token(); // consume else token
 
-            self.expect_peek(TokenKind::LeftBrace)?;
+            // lets parse branches
+            if self.current_token_is(TokenKind::If) {
+                self.next_token(); // consume if token
+                let start = self.current_token.span.start;
+                self.expect_current(TokenKind::LeftParen)?;
+                let (condition, _) = self.parse_expression(Precedence::Lowest)?;
+                self.expect_peek(TokenKind::RightParen)?; // biggening of the block
+                self.expect_peek(TokenKind::LeftBrace)?; // biggening of the block
+                let consequent = Box::new(self.parse_block_statement()?);
+                self.expect_current(TokenKind::RightBrace)?; // end of the block
+                let end = self.current_token.span.end;
 
-            Some(Box::new(self.parse_block_statement()?))
-        } else {
-            None
-        };
+                branches.push(If {
+                    condition,
+                    consequent,
+                    branches: vec![],
+                    alternate: None,
+                    span: Span { start, end },
+                });
+            } else {
+                // parse alternate
+
+                if !self.current_token_is(TokenKind::LeftBrace) {
+                    return Err(format!("expected to open the block with left brace"));
+                }
+
+                alternate = Some(Box::new(self.parse_block_statement()?));
+
+                if !self.current_token_is(TokenKind::RightBrace) {
+                    return Err(format!("expected to close the block with right brace"));
+                }
+            }
+        }
 
         let end = self.current_token.span.end;
 
         Ok(Statement::If(If {
             condition,
             consequent,
+            branches,
             alternate,
             span: Span { start, end },
         }))
@@ -371,7 +409,11 @@ impl<'a> Parser<'a> {
     }
 
     // Parse expressions
-    fn parse_function_call_expression(&mut self, left: Expression, left_start: usize) -> Result<Expression, ParseError>{
+    fn parse_function_call_expression(
+        &mut self,
+        left: Expression,
+        left_start: usize,
+    ) -> Result<Expression, ParseError> {
         let arguments = self.parse_expression_series(TokenKind::RightParen)?;
 
         let end = self.current_token.span.end;
@@ -379,9 +421,12 @@ impl<'a> Parser<'a> {
         Ok(Expression::FunctionCall(FunctionCall {
             call: Box::new(left),
             arguments: arguments.0,
-            span: Span { start: left_start, end },
+            span: Span {
+                start: left_start,
+                end,
+            },
         }))
-    } 
+    }
 
     fn parse_bool_expression(&mut self, token_kind: TokenKind) -> Result<Expression, ParseError> {
         let bool_literal = Expression::Literal(Literal::Boolean(Boolean {
@@ -516,7 +561,7 @@ impl<'a> Parser<'a> {
                     },
                 })))
             }
-            
+
             TokenKind::LeftParen => {
                 self.next_token(); // consume the identifier token
                 return Some(self.parse_function_call_expression(left, left_start));

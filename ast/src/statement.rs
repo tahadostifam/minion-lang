@@ -47,6 +47,7 @@ pub struct Variable {
 pub struct If {
     pub condition: Expression,
     pub consequent: Box<BlockStatement>,
+    pub branches: Vec<If>,
     pub alternate: Option<Box<BlockStatement>>,
     pub span: Span,
 }

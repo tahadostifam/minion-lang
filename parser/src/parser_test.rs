@@ -49,7 +49,36 @@ mod tests {
 
     #[test]
     fn test_if_statement() {
-        assert_parse("if (1 < 2) { 3 } else {}");
+        assert_parse("
+        if (1 < 2)
+        {
+            print(1);
+        } 
+        else if (2 == 2) {
+            print(2);
+        }
+        else {
+            print(3);
+        }
+        ");
+    }
+    
+    #[test]
+    fn test_if_statement2() {
+        assert_parse("
+        if (next() == 0) {
+            print(10 / 2 * 3 + 1);
+        }
+        ");
+    }
+
+    #[test]
+    fn test_parse_block_statement() {
+        let input = "{ 1 + 2; hello(); }";
+        let mut binding = Lexer::new(input.to_string());
+        let mut parser = Parser::new(&mut binding);
+        let block = parser.parse_block_statement().unwrap();
+        println!("{:#?}", block);
     }
 
     #[test]

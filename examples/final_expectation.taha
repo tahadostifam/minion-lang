@@ -25,3 +25,9 @@ for #i = 0; i < 10; i++; {
 
 // Array definition
 #names = ["Taha", "Rust", "Ruby", "Go", "C#"];
+
+if (next() == 0) {
+    print(10 / 2 * 3 + 1);
+}
+
+print("It works excellently!");

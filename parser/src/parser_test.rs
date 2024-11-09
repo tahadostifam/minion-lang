@@ -121,12 +121,31 @@ mod tests {
     }
 
     #[test]
-    fn test_prefix_1() {
+    fn test_parse_1() {
         assert_parse(
             "
+        print(1);
+        print(1 + 2);
+        print(1 > 2);
+        print(1 >= 2);
+        print(1 < 2);
+        print(1 <= 2);
+        print(1 == 2);
+        print(1 != 2);
         print(!true);
         print(!false);
+        print(\"Taha Lang =)\");
 ",
         );
+    }
+
+    #[test]
+    fn test_parse_2() {
+        assert_parse("print(1 + 2);");
+    }
+
+    #[test]
+    fn test_parse_modulo() {
+        assert_parse("3 * 2");
     }
 }

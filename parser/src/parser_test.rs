@@ -49,7 +49,8 @@ mod tests {
 
     #[test]
     fn test_if_statement() {
-        assert_parse("
+        assert_parse(
+            "
         if (1 < 2)
         {
             print(1);
@@ -60,16 +61,19 @@ mod tests {
         else {
             print(3);
         }
-        ");
+        ",
+        );
     }
-    
+
     #[test]
     fn test_if_statement2() {
-        assert_parse("
+        assert_parse(
+            "
         if (next() == 0) {
             print(10 / 2 * 3 + 1);
         }
-        ");
+        ",
+        );
     }
 
     #[test]
@@ -94,23 +98,35 @@ mod tests {
 
         println!("{:#?}", params);
     }
-    
-    #[test] 
+
+    #[test]
     fn test_parse_expression_series() {
         let mut lexer = Lexer::new("[1, 2, 3, ]".to_string());
         let mut parser = Parser::new(&mut lexer);
-        let params = parser.parse_expression_series(TokenKind::RightBracket).unwrap();
+        let params = parser
+            .parse_expression_series(TokenKind::RightBracket)
+            .unwrap();
 
         println!("{:#?}", params.0);
     }
-    
+
     #[test]
     fn test_function_statement() {
         assert_parse("fn foo_bar(a, b) { ret a + b; }");
     }
-    
+
     #[test]
     fn test_function_call_expresion() {
         assert_parse("foo_bar(1, 2);");
+    }
+
+    #[test]
+    fn test_prefix_1() {
+        assert_parse(
+            "
+        print(!true);
+        print(!false);
+",
+        );
     }
 }

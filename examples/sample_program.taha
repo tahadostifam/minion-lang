@@ -2,8 +2,8 @@
 #a = 1;
 #b = 2;
 
-if a == 2 {
-    puts "Hello World";
+if (a == 2) {
+    print(1);
 }
 
 // Function definition

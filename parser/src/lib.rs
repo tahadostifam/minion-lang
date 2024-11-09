@@ -331,7 +331,6 @@ impl<'a> Parser<'a> {
         })
     }
 
-    // ANCHOR
     fn parse_if_statement(&mut self) -> Result<Statement, ParseError> {
         let start = self.current_token.span.start;
 
@@ -494,7 +493,10 @@ impl<'a> Parser<'a> {
                 raw: value.clone(),
                 span,
             })),
-            TokenKind::Minus => {
+            token_kind @ TokenKind::True | token_kind @ TokenKind::False => {
+                return self.parse_bool_expression(token_kind.clone());
+            }
+            TokenKind::Minus | TokenKind::Bang => {
                 let start = self.current_token.span.start;
                 let prefix_operator = self.current_token.clone();
 
@@ -511,8 +513,11 @@ impl<'a> Parser<'a> {
                     },
                 })
             }
-            token_kind @ TokenKind::True | token_kind @ TokenKind::False => {
-                return self.parse_bool_expression(token_kind.clone());
+            TokenKind::LeftParen => {
+                self.next_token();
+                let expr = self.parse_expression(Precedence::Lowest)?.0;
+                self.expect_peek(TokenKind::RightParen)?;
+                return Ok(expr);
             }
             _ => {
                 return Err(format!(

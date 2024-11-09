@@ -103,20 +103,15 @@ mod tests {
 
     #[test]
     fn test_comments() {
-        assert_tokens(
-            "// Sample comments",
-            None,
-            None,
-        );
+        assert_tokens("// Sample comments", None, None);
     }
 
     #[test]
     fn test_comments_and_operators() {
         assert_tokens(
             "// Comment 
-            
-        ++",
 
+        ++",
             Some(&vec![TokenKind::Plus, TokenKind::Plus]),
             None,
         );
@@ -305,7 +300,7 @@ mod tests {
     }
 
     #[test]
-    fn is_whitespace() {
+    fn test_is_whitespace() {
         let input = " a 
 ";
 
@@ -313,5 +308,14 @@ mod tests {
         assert_eq!(Lexer::is_whitespace(input.chars().nth(1).unwrap()), false);
         assert_eq!(Lexer::is_whitespace(input.chars().nth(2).unwrap()), true);
         assert_eq!(Lexer::is_whitespace(input.chars().nth(3).unwrap()), true);
+    }
+
+    #[test]
+    fn test_str() {
+        assert_tokens(
+            "\"Taha-Lang\"",
+            Some(&vec![TokenKind::String(String::from("Taha-Lang"))]),
+            None,
+        );
     }
 }

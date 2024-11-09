@@ -68,9 +68,7 @@ impl Lexer {
         }
 
         let token_kind = match self.ch {
-            ' ' => {
-                return self.next_token()
-            }
+            ' ' => return self.next_token(),
             '+' => TokenKind::Plus,
             '-' => TokenKind::Minus,
             '*' => TokenKind::Asterisk,
@@ -84,7 +82,13 @@ impl Lexer {
             ']' => TokenKind::RightBracket,
             ',' => TokenKind::Comma,
             '#' => TokenKind::Hashtag,
-            '"' => TokenKind::DoubleQuote,
+            '"' => {
+                let (start, end, content) = self.read_string()?;
+                return Ok(Token {
+                    kind: TokenKind::String(content),
+                    span: Span { start, end },
+                });
+            }
             '=' => {
                 if self.peek_char() == '=' {
                     self.read_char(); // consume current equal sign
@@ -257,6 +261,32 @@ impl Lexer {
         })
     }
 
+    fn read_string(&mut self) -> Result<(usize, usize, String), String> {
+        let start: usize = self.pos + 1; // plus one to skip the first double quote
+        loop {
+            self.read_char();
+
+            if self.ch == '"' || self.ch == '\u{0}' {
+                break;
+            }
+
+            if self.is_eof() {
+                return Err(format!("expected closing string with double quotation but got nothing"));
+            }
+        }
+
+        let content = self.input[start..self.pos].to_string();
+
+        if self.ch == '"' {
+            // consume the ending double quote
+            self.read_char();
+        }
+
+        let end = self.pos;
+
+        Ok((start - 1, end, content))
+    }
+
     fn read_identifider(&mut self) -> TokenKind {
         let start = self.pos;
 
@@ -296,7 +326,7 @@ impl Lexer {
         self.pos == self.input.len()
     }
 
-    fn is_whitespace(ch: char) -> bool{
+    fn is_whitespace(ch: char) -> bool {
         ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r'
     }
 
@@ -323,7 +353,8 @@ impl Lexer {
                 self.read_char(); // consume
             }
 
-            if self.ch == '\n' { // consume the new line char
+            if self.ch == '\n' {
+                // consume the new line char
                 self.read_char();
             }
         }

@@ -9,7 +9,7 @@ pub enum Statement {
     Expression(Expression),
     If(If),
     Return(Return),
-    Function(Function)
+    Function(Function),
 }
 
 pub fn format_statements(stmts: &Vec<Statement>) -> String {
@@ -23,11 +23,11 @@ impl fmt::Display for Statement {
 }
 
 #[derive(Debug, Clone)]
-pub struct Function { 
+pub struct Function {
     pub name: String,
     pub params: Vec<Identifier>,
     pub body: Box<BlockStatement>,
-    pub span: Span
+    pub span: Span,
 }
 
 #[derive(Debug, Clone)]
@@ -56,4 +56,10 @@ pub struct If {
 pub struct Return {
     pub argument: Expression,
     pub span: Span,
+}
+
+impl fmt::Display for BlockStatement {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", format_statements(&self.body))
+    }
 }

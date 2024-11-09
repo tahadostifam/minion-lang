@@ -1,5 +1,3 @@
-use std::{borrow::Borrow, os};
-
 use ast::{
     expression::{
         BinaryExpression, Boolean, Expression, FunctionCall, Identifier, Integer, Literal,
@@ -551,7 +549,7 @@ impl<'a> Parser<'a> {
 
                 let operator = self.current_token.clone();
                 let precedence = determine_token_precedence(self.current_token.kind.clone());
-                
+
                 self.next_token(); // consume the operator
 
                 let (right, span) = self.parse_expression(precedence).unwrap();

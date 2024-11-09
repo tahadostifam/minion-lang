@@ -1,4 +1,5 @@
 use core::fmt;
+use std::string;
 use token::{Span, Token};
 
 #[derive(Debug, Clone)]
@@ -11,10 +12,10 @@ pub enum Expression {
 }
 
 #[derive(Debug, Clone)]
-pub struct FunctionCall { 
+pub struct FunctionCall {
     pub call: Box<Expression>,
     pub arguments: Vec<Expression>,
-    pub span: Span
+    pub span: Span,
 }
 
 #[derive(Debug, Clone)]
@@ -28,20 +29,18 @@ pub enum Literal {
     Integer(Integer),
     Boolean(Boolean),
     String(StringType),
-    Array(Array),
-    Hash(Hash),
 }
 
 #[derive(Debug, Clone)]
 pub struct UnaryExpression {
     pub operator: Token,
     pub operand: Box<Expression>,
-    pub span: Span
+    pub span: Span,
 }
 
 #[derive(Debug, Clone)]
 pub struct BinaryExpression {
-    pub operator: Token, 
+    pub operator: Token,
     pub left: Box<Expression>,
     pub right: Box<Expression>,
     pub span: Span,
@@ -77,13 +76,67 @@ pub struct Hash {
     pub span: Span,
 }
 
-
 pub fn format_expressions(exprs: &Vec<Expression>) -> String {
     exprs.iter().map(|expr| expr.to_string()).collect()
 }
 
+impl fmt::Display for Identifier {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.name)
+    }
+}
+
+impl fmt::Display for Integer {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.raw)
+    }
+}
+
+impl fmt::Display for Boolean {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.raw)
+    }
+}
+
+impl fmt::Display for StringType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.raw)
+    }
+}
+
+impl fmt::Display for Literal {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Literal::Integer(integer) => write!(f, "{}", integer),
+            Literal::Boolean(boolean) => write!(f, "{}", boolean),
+            Literal::String(string_type) => write!(f, "{}", string_type),
+        }
+    }
+}
+
 impl fmt::Display for Expression {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self)
+        match self {
+            Expression::Identifier(identifier) => write!(f, "{}", identifier.name),
+            Expression::Literal(literal) => write!(f, "{}", literal),
+            Expression::Prefix(UnaryExpression {
+                operand, operator, ..
+            }) => {
+                write!(f, "({}{})", operator.kind, operand)
+            }
+            Expression::Infix(BinaryExpression {
+                operator,
+                left,
+                right,
+                ..
+            }) => {
+                write!(f, "({} {} {})", left, operator.kind, right)
+            }
+            Expression::FunctionCall(FunctionCall {
+                call, arguments, ..
+            }) => {
+                write!(f, "{}({})", call, format_expressions(arguments))
+            }
+        }
     }
 }

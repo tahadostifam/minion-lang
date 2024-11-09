@@ -5,7 +5,7 @@ edition = "2021"
 resolver = "2"
 
 [workspace]
-members = ["ast", "lexer", "parser", "token"]
+members = ["ast", "lexer", "object", "parser", "token"]
 
 [[bin]]
 name = "taha"

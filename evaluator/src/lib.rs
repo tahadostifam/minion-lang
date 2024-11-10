@@ -41,8 +41,9 @@ fn eval_statement(statement: &Statement, env: &Env) -> Result<Rc<Object>, EvalEr
             condition,
             consequent,
             alternate,
+            branches,
             ..
-        }) => eval_if_statement(condition, consequent, alternate, env),
+        }) => eval_if_statement(condition, consequent, alternate, branches, env),
         Statement::Return(Return { argument, .. }) => eval_return_statement(argument, env),
         Statement::Function(Function { params, body, .. }) => {
             eval_function_statement(params, &body, env)
@@ -73,13 +74,24 @@ fn eval_if_statement(
     condition: &Expression,
     consequent: &BlockStatement,
     alternate: &Option<Box<BlockStatement>>,
+    branches: &Vec<If>,
     env: &Env,
 ) -> Result<Rc<Object>, EvalError> {
     let condition = eval_expression(condition.clone(), &Rc::clone(env))?;
-    // TODO - eval branches of the if statement
+    
     if is_truthy(&condition) {
         eval_block_statements(&(consequent.body), env)
     } else {
+        for stmt in branches {
+            let condition = eval_expression(stmt.condition.clone(), env)?;
+
+            if is_truthy(&condition) {
+                return eval_block_statements(&stmt.consequent.body, env);
+            } else {
+                continue;
+            }
+        }
+
         match alternate {
             Some(alt) => eval_block_statements(&(alt.body), env),
             None => Ok(Rc::new(Object::Null)),
@@ -91,10 +103,12 @@ fn eval_expression(expr: Expression, env: &Env) -> Result<Rc<Object>, EvalError>
     match expr {
         Expression::Literal(literal) => eval_literal(&literal),
         Expression::Identifier(identifier) => eval_identifier(identifier.name.as_str(), env),
-        Expression::Prefix(UnaryExpression { operator, operand, .. }) => {
+        Expression::Prefix(UnaryExpression {
+            operator, operand, ..
+        }) => {
             let val = eval_expression(*operand, &Rc::clone(env))?;
             return eval_prefix(operator.kind, &val);
-        },
+        }
         Expression::Infix(binary_expression) => {
             let left = eval_expression(*binary_expression.left, &Rc::from(env.clone()))?;
             let right = eval_expression(*binary_expression.right, &Rc::from(env.clone()))?;

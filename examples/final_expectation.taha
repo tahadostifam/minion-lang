@@ -19,7 +19,6 @@ fn divide(num1, num2) {
 divide(a, b);
 
 
-
 // Array definition
 #names = ["Taha", "Rust", "Ruby", "Go", "C#"];
 

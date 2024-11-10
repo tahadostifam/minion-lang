@@ -1,7 +1,14 @@
-#foo = 10;
+#foo = 30;
 
 if (foo == 10) {
     "is zero"
-} else {
+} 
+else if (foo == 20) {
+    "is twenty"
+}
+else if (foo == 30) {
+    "is thirty"
+}
+else {
     "is ten"
 }

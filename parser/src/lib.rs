@@ -68,8 +68,9 @@ impl<'a> Parser<'a> {
         self.next_token(); // consume sharp token
 
         let identifier = self.current_token.clone(); // export the name of the identifier
+        self.next_token(); // consume thte identofier
 
-        self.expect_peek(TokenKind::Assign)?;
+        self.expect_current(TokenKind::Assign)?;
 
         let (expr, span) = self.parse_expression(Precedence::Lowest)?;
 

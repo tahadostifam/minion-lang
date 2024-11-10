@@ -1,0 +1,7 @@
+#foo = 10;
+
+if (foo == 10) {
+    "is zero"
+} else {
+    "is ten"
+}

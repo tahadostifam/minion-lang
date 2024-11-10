@@ -3,6 +3,7 @@ use ast::{expression::Identifier, statement::BlockStatement};
 use core::fmt;
 use std::rc::Rc;
 
+pub type EvalError = String;
 pub type BuiltinFunc = fn(Vec<Rc<Object>>) -> Rc<Object>;
 
 #[derive(Debug, Clone)]

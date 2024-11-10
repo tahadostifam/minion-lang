@@ -5,7 +5,7 @@ edition = "2021"
 resolver = "2"
 
 [workspace]
-members = ["ast", "lexer", "object", "parser", "token"]
+members = ["ast", "evaluator", "lexer", "object", "parser", "token"]
 
 [[bin]]
 name = "taha"
@@ -13,3 +13,5 @@ path = "./cli.rs"
 
 [dependencies]
 parser = { path = "./parser", version = "*" }
+evaluator = { path = "./evaluator", version = "*" }
+object = { path = "./object", version = "*" }

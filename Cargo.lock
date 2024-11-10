@@ -10,6 +10,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "evaluator"
+version = "0.1.0"
+dependencies = [
+ "ast",
+ "object",
+ "parser",
+ "token",
+]
+
+[[package]]
 name = "lazy_static"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -43,6 +53,8 @@ dependencies = [
 name = "taha-lang"
 version = "0.1.0"
 dependencies = [
+ "evaluator",
+ "object",
  "parser",
 ]
 

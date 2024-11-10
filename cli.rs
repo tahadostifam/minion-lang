@@ -13,7 +13,7 @@ use std::{
 };
 
 static PROMPT: &str = "(taha) > ";
-static RESULT: &str = "#";
+static RESULT: &str = "=>";
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -26,8 +26,14 @@ fn main() {
                 write_line(&err.to_string());
             }
             Ok(file_content) => {
-                let result = run(&file_content).unwrap();
-                println!("{}", result);
+                match run(&file_content) {
+                    Err(e) => {
+                        write_line(e.as_str());
+                    }
+                    Ok(result) => {
+                        write_line(result.to_string().as_str());
+                    },
+                }            
             }
         }
     } else if args.len() == 1 {

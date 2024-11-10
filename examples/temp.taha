@@ -1,14 +1,6 @@
-#foo = 30;
+fn sum(x, y) {
+    ret x + y;
+}
 
-if (foo == 10) {
-    "is zero"
-} 
-else if (foo == 20) {
-    "is twenty"
-}
-else if (foo == 30) {
-    "is thirty"
-}
-else {
-    "is ten"
-}
+sum(1, 2);
+

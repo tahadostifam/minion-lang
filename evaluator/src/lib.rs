@@ -1,14 +1,17 @@
 use ast::{
-    expression::{Boolean, Expression, Identifier, Integer, Literal, StringType, UnaryExpression},
+    expression::{
+        Boolean, Expression, FunctionCall, Identifier, Integer, Literal, StringType,
+        UnaryExpression,
+    },
     statement::{BlockStatement, Function, If, Return, Statement},
     Node,
 };
 use object::{
     builtins::BuiltIns,
-    env::Env,
+    env::{Env, Environment},
     object::{EvalError, Object},
 };
-use std::rc::Rc;
+use std::{cell::RefCell, rc::Rc};
 use token::{Token, TokenKind};
 
 mod evaluator_test;
@@ -46,21 +49,17 @@ fn eval_statement(statement: &Statement, env: &Env) -> Result<Rc<Object>, EvalEr
         }) => eval_if_statement(condition, consequent, alternate, branches, env),
         Statement::Return(Return { argument, .. }) => eval_return_statement(argument, env),
         Statement::Function(Function { params, body, .. }) => {
-            eval_function_statement(params, &body, env)
+            eval_function_statement(params.clone(), *body.clone(), &env.clone())
         }
     }
 }
 
 fn eval_function_statement(
-    params: &Vec<Identifier>,
-    body: &BlockStatement,
+    params: Vec<Identifier>,
+    body: BlockStatement,
     env: &Env,
 ) -> Result<Rc<Object>, EvalError> {
-    Ok(Rc::new(Object::Function(
-        params.clone(),
-        body.clone(),
-        Rc::clone(env),
-    )))
+    Ok(Rc::new(Object::Function(params, body, env.clone())))
 }
 
 fn eval_return_statement(argument: &Expression, env: &Env) -> Result<Rc<Object>, EvalError> {
@@ -78,7 +77,7 @@ fn eval_if_statement(
     env: &Env,
 ) -> Result<Rc<Object>, EvalError> {
     let condition = eval_expression(condition.clone(), &Rc::clone(env))?;
-    
+
     if is_truthy(&condition) {
         eval_block_statements(&(consequent.body), env)
     } else {
@@ -99,6 +98,16 @@ fn eval_if_statement(
     }
 }
 
+fn eval_expressions(exprs: &Vec<Expression>, env: &Env) -> Result<Vec<Rc<Object>>, EvalError> {
+    let mut list = Vec::new();
+    for expr in exprs {
+        let val = eval_expression(expr.clone(), &Rc::clone(env))?;
+        list.push(val);
+    }
+
+    Ok(list)
+}
+
 fn eval_expression(expr: Expression, env: &Env) -> Result<Rc<Object>, EvalError> {
     match expr {
         Expression::Literal(literal) => eval_literal(&literal),
@@ -114,7 +123,32 @@ fn eval_expression(expr: Expression, env: &Env) -> Result<Rc<Object>, EvalError>
             let right = eval_expression(*binary_expression.right, &Rc::from(env.clone()))?;
             return eval_infix(binary_expression.operator, &left, &right);
         }
-        Expression::FunctionCall(function_call) => todo!(),
+        Expression::FunctionCall(FunctionCall {
+            call, arguments, ..
+        }) => {
+            let func = eval_expression(*call, &Rc::clone(env))?;
+            let args = eval_expressions(&arguments, env)?;
+            dbg!(func.clone());
+            dbg!(args.clone());
+            apply_function(&func, &args)
+        }
+    }
+}
+
+fn apply_function(function: &Rc<Object>, args: &Vec<Rc<Object>>) -> Result<Rc<Object>, EvalError> {
+    match &**function {
+        Object::Function(params, body, env) => {
+            let mut env = Environment::new_enclosed_environment(&env);
+
+            params.iter().enumerate().for_each(|(i, param)| {
+                env.set(param.name.clone(), args[i].clone());
+            });
+
+            let evaluated = eval_block_statements(&body.body, &Rc::new(RefCell::new(env)))?;
+            return unwrap_return(evaluated);
+        }
+        Object::Builtin(b) => Ok(b(args.to_vec())),
+        f => Err(format!("expected {} to be a function", f)),
     }
 }
 
@@ -128,13 +162,13 @@ fn eval_identifier(identifier: &str, env: &Env) -> Result<Rc<Object>, EvalError>
     }
 }
 
-// fn unwrap_return(obj: Rc<Object>) -> Result<Rc<Object>, EvalError> {
-//     if let Object::ReturnValue(val) = &*obj {
-//         Ok(Rc::clone(&val))
-//     } else {
-//         Ok(obj)
-//     }
-// }
+fn unwrap_return(obj: Rc<Object>) -> Result<Rc<Object>, EvalError> {
+    if let Object::ReturnValue(val) = &*obj {
+        Ok(Rc::clone(&val))
+    } else {
+        Ok(obj)
+    }
+}
 
 fn eval_variable_declaration(
     identifier: &Token,

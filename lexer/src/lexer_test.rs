@@ -300,6 +300,32 @@ mod tests {
     }
 
     #[test]
+    fn test_function_call() {
+        assert_tokens(
+            "foo_bar()",
+            Some(&vec![
+                TokenKind::Identifier { name: "foo_bar".to_string() },
+                TokenKind::LeftParen,
+                TokenKind::RightParen,
+            ]),
+            None,
+        );
+
+        assert_tokens(
+            "foo_bar(1, 2)",
+            Some(&vec![
+                TokenKind::Identifier { name: "foo_bar".to_string() },
+                TokenKind::LeftParen,
+                TokenKind::Integer(1),
+                TokenKind::Comma,
+                TokenKind::Integer(2),
+                TokenKind::RightParen,
+            ]),
+            None,
+        );
+    }
+
+    #[test]
     fn test_is_whitespace() {
         let input = " a 
 ";

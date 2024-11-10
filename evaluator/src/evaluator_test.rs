@@ -22,15 +22,20 @@ mod tests {
 
     #[test]
     fn test_integer_expressions() {
-        let env: Env = Rc::new(RefCell::new(Default::default()));
+        assert_eval(&[
+            ("1 + 1", "2"),
+            ("(1 + 1) + 1", "3"),
+            ("10 / 2 + 1", "6"),
+            ("5 + (1 + 1) - 10", "-3"),
+            // ("10 % 2", "0")
+        ]);
+    }
 
-        let program = Parser::parse("1 + 2".to_string()).unwrap();
 
-        let result = eval(program, &env).unwrap();
-
-        dbg!(result);
-        // assert_eval(&[
-        //     ("1 + 1", "0")
-        // ]);
+    #[test]
+    fn test_function_declaration() {
+        assert_eval(&[
+            ("fn foo_bar(a, b) { ret a + b; }", "null")
+        ]);
     }
 }

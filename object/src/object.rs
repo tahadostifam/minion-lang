@@ -27,15 +27,7 @@ impl fmt::Display for Object {
             Object::Error(v) => write!(f, "{}", v),
             Object::ReturnValue(expr) => write!(f, "{}", expr),
             Object::Builtin(_) => write!(f, "[builtin func]"),
-            Object::Function(params, body, .. ) => {
-                let func_params = params
-                    .iter()
-                    .map(|stmt| stmt.to_string())
-                    .collect::<Vec<String>>()
-                    .join(",");
-
-                write!(f, "fn({}) {{ {} }}", func_params, body)
-            }
+            Object::Function(_, _, _) => write!(f, "[func]"),
             Object::Null => write!(f, "null"),
         }
     }

@@ -275,7 +275,13 @@ impl<'a> Parser<'a> {
         if self.current_token_is(TokenKind::LeftBrace) {
             let body = Box::new(self.parse_block_statement()?);
 
-            self.expect_current(TokenKind::RightBrace)?;
+            if !self.current_token_is(TokenKind::RightBrace) {
+                return Err(format!("expected to close the statement with a right brace"))
+            }
+
+            if self.peek_token_is(TokenKind::Semicolon) {
+                self.next_token();
+            }
 
             let end = self.current_token.span.end;
 

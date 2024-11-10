@@ -1,5 +1,4 @@
 use core::fmt;
-use std::string;
 use token::{Span, Token};
 
 #[derive(Debug, Clone)]

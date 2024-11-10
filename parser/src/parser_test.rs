@@ -112,12 +112,13 @@ mod tests {
 
     #[test]
     fn test_function_statement() {
-        assert_parse("fn foo_bar(a, b) { ret a + b; }");
+        assert_parse("fn foo_bar(a, b) { ret a + b; } foo_bar();");
     }
 
     #[test]
     fn test_function_call_expresion() {
         assert_parse("foo_bar(1, 2);");
+        assert_parse("foo_bar();");
     }
 
     #[test]

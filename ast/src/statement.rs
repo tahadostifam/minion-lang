@@ -18,10 +18,9 @@ pub fn format_statements(stmts: &Vec<Statement>) -> String {
 
 impl fmt::Display for Statement {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self)
+        write!(f, "{:?}", self)
     }
 }
-
 #[derive(Debug, Clone)]
 pub struct Function {
     pub name: String,

@@ -62,7 +62,10 @@ fn eval_function_statement(
 ) -> Result<Rc<Object>, EvalError> {
     // we prevent overwriting built-in functions!
     match BuiltIns.iter().find(|b| b.0 == name) {
-        Some(_) => Err(format!("redeclaring built-in function {} is not allowed", name)),
+        Some(_) => Err(format!(
+            "redeclaring built-in function {} is not allowed",
+            name
+        )),
         None => {
             let declare_fn = Rc::new(Object::Function(params, body, env.clone()));
             env.borrow_mut().set(name, declare_fn.clone());
@@ -224,11 +227,23 @@ fn eval_infix(operator: Token, left: &Object, right: &Object) -> Result<Rc<Objec
         (Object::String(left), Object::String(right)) => {
             return eval_string_infix(operator.kind, left, right);
         }
+        (Object::String(left), Object::Integer(right)) => {
+            return eval_string_infix(operator.kind, left, &right.to_string())
+        }
+        (Object::Integer(left), Object::String(right)) => {
+            return eval_string_infix(operator.kind, &left.to_string(), right)
+        }
+        (Object::Boolean(left), Object::String(right)) => {
+            return eval_string_infix(operator.kind, &left.to_string(), right)
+        }
+        (Object::String(left), Object::Boolean(right)) => {
+            return eval_string_infix(operator.kind, left, &right.to_string())
+        }
         _ => {
             return Err(format!(
                 "eval infix not available for operator: {}",
                 operator.kind
-            ))
+            ));
         }
     }
 }

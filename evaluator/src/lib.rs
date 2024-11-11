@@ -48,18 +48,27 @@ fn eval_statement(statement: &Statement, env: &Env) -> Result<Rc<Object>, EvalEr
             ..
         }) => eval_if_statement(condition, consequent, alternate, branches, env),
         Statement::Return(Return { argument, .. }) => eval_return_statement(argument, env),
-        Statement::Function(Function { params, body, .. }) => {
-            eval_function_statement(params.clone(), *body.clone(), &env.clone())
-        }
+        Statement::Function(Function {
+            name, params, body, ..
+        }) => eval_function_statement(name.clone(), params.clone(), *body.clone(), &env.clone()),
     }
 }
 
 fn eval_function_statement(
+    name: String,
     params: Vec<Identifier>,
     body: BlockStatement,
     env: &Env,
 ) -> Result<Rc<Object>, EvalError> {
-    Ok(Rc::new(Object::Function(params, body, env.clone())))
+    // we prevent overwriting built-in functions!
+    match BuiltIns.iter().find(|b| b.0 == name) {
+        Some(_) => Err(format!("redeclaring built-in function {} is not allowed", name)),
+        None => {
+            let declare_fn = Rc::new(Object::Function(params, body, env.clone()));
+            env.borrow_mut().set(name, declare_fn.clone());
+            Ok(declare_fn)
+        }
+    }
 }
 
 fn eval_return_statement(argument: &Expression, env: &Env) -> Result<Rc<Object>, EvalError> {
@@ -110,6 +119,51 @@ fn eval_expressions(exprs: &Vec<Expression>, env: &Env) -> Result<Vec<Rc<Object>
 
 fn eval_expression(expr: Expression, env: &Env) -> Result<Rc<Object>, EvalError> {
     match expr {
+        Expression::FunctionCall(FunctionCall {
+            call, arguments, ..
+        }) => match *call {
+            Expression::Identifier(Identifier { name, .. }) => {
+                // Let's distinguish the built-in funcs and declared ones
+
+                let args = eval_expressions(&arguments, env)?;
+
+                match BuiltIns.iter().find(|b| b.0 == name) {
+                    Some(bfn) => {
+                        return Ok(bfn.1(args));
+                    }
+                    None => {
+                        let func = env
+                            .borrow()
+                            .get(&name)
+                            .expect(format!("{} not declared", name).as_str());
+
+                        let result = match &*func {
+                            Object::Function(params, body, env) => {
+                                let mut env = Environment::new_enclosed_environment(&env);
+
+                                params.iter().enumerate().for_each(|(i, param)| {
+                                    env.set(param.name.clone(), args[i].clone());
+                                });
+
+                                let evaluated =
+                                    eval_block_statements(&body.body, &Rc::new(RefCell::new(env)))?;
+
+                                return unwrap_return(evaluated);
+                            }
+                            f => Err(format!("expected {} to be a function", f)),
+                        };
+
+                        return Ok(result?);
+                    }
+                }
+            }
+            _ => {
+                return Err(format!(
+                    "expected to get function declaratino from the object store but got {:?}",
+                    call
+                ))
+            }
+        },
         Expression::Literal(literal) => eval_literal(&literal),
         Expression::Identifier(identifier) => eval_identifier(identifier.name.as_str(), env),
         Expression::Prefix(UnaryExpression {
@@ -119,36 +173,10 @@ fn eval_expression(expr: Expression, env: &Env) -> Result<Rc<Object>, EvalError>
             return eval_prefix(operator.kind, &val);
         }
         Expression::Infix(binary_expression) => {
-            let left = eval_expression(*binary_expression.left, &Rc::from(env.clone()))?;
-            let right = eval_expression(*binary_expression.right, &Rc::from(env.clone()))?;
+            let left = eval_expression(*binary_expression.left, &Rc::clone(env))?;
+            let right = eval_expression(*binary_expression.right, &Rc::clone(env))?;
             return eval_infix(binary_expression.operator, &left, &right);
         }
-        Expression::FunctionCall(FunctionCall {
-            call, arguments, ..
-        }) => {
-            let func = eval_expression(*call, &Rc::clone(env))?;
-            let args = eval_expressions(&arguments, env)?;
-            dbg!(func.clone());
-            dbg!(args.clone());
-            apply_function(&func, &args)
-        }
-    }
-}
-
-fn apply_function(function: &Rc<Object>, args: &Vec<Rc<Object>>) -> Result<Rc<Object>, EvalError> {
-    match &**function {
-        Object::Function(params, body, env) => {
-            let mut env = Environment::new_enclosed_environment(&env);
-
-            params.iter().enumerate().for_each(|(i, param)| {
-                env.set(param.name.clone(), args[i].clone());
-            });
-
-            let evaluated = eval_block_statements(&body.body, &Rc::new(RefCell::new(env)))?;
-            return unwrap_return(evaluated);
-        }
-        Object::Builtin(b) => Ok(b(args.to_vec())),
-        f => Err(format!("expected {} to be a function", f)),
     }
 }
 

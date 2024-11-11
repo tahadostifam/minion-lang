@@ -1,6 +1,1 @@
-fn sum(x, y) {
-    ret x + y;
-}
-
-sum(1, 2);
-
+print("Hello World");

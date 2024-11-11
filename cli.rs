@@ -30,9 +30,7 @@ fn main() {
                     Err(e) => {
                         write_line(e.as_str());
                     }
-                    Ok(result) => {
-                        write_line(result.to_string().as_str());
-                    },
+                    Ok(_) => {},
                 }            
             }
         }

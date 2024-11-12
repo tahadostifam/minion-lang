@@ -14,19 +14,13 @@ mod tests {
         for token in lexer {
             println!("{:?}", token);
 
-            match expected_tokens {
-                Some(list) => {
-                    assert_eq!(token.kind, list[i]);
-                }
-                None => {}
+            if let Some(list) = expected_tokens {
+                assert_eq!(token.kind, list[i]);
             }
 
-            match spans {
-                Some(list) => {
-                    assert_eq!(token.span.start, list[i].start);
-                    assert_eq!(token.span.end, list[i].end);
-                }
-                None => {}
+            if let Some(list) = spans {
+                assert_eq!(token.span.start, list[i].start);
+                assert_eq!(token.span.end, list[i].end);
             }
 
             i += 1;
@@ -330,10 +324,10 @@ mod tests {
         let input = " a 
 ";
 
-        assert_eq!(Lexer::is_whitespace(input.chars().nth(0).unwrap()), true);
-        assert_eq!(Lexer::is_whitespace(input.chars().nth(1).unwrap()), false);
-        assert_eq!(Lexer::is_whitespace(input.chars().nth(2).unwrap()), true);
-        assert_eq!(Lexer::is_whitespace(input.chars().nth(3).unwrap()), true);
+        assert!(Lexer::is_whitespace(input.chars().next().unwrap()));
+        assert!(!Lexer::is_whitespace(input.chars().nth(1).unwrap()));
+        assert!(Lexer::is_whitespace(input.chars().nth(2).unwrap()));
+        assert!(Lexer::is_whitespace(input.chars().nth(3).unwrap()));
     }
 
     #[test]

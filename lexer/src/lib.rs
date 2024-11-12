@@ -22,12 +22,12 @@ impl Lexer {
 
         lexer.read_char();
 
-        return lexer;
+        lexer
     }
 
     fn peek_char(&self) -> char {
         if self.next_pos >= self.input.len() {
-            return ' ';
+            ' '
         } else {
             self.input
                 .chars()
@@ -271,7 +271,7 @@ impl Lexer {
             }
 
             if self.is_eof() {
-                return Err(format!("expected closing string with double quotation but got nothing"));
+                return Err("expected closing string with double quotation but got nothing".to_string());
             }
         }
 
@@ -319,7 +319,7 @@ impl Lexer {
     }
 
     fn is_numeric(&self, ch: char) -> bool {
-        ch >= '0' && ch <= '9'
+        ch.is_ascii_digit()
     }
 
     fn is_eof(&mut self) -> bool {

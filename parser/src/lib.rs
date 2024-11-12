@@ -34,14 +34,14 @@ impl<'a> Parser<'a> {
             .next_token()
             .expect("An error raised when reading peek_token by lexer at parser");
 
-        let parser = Parser {
+        
+
+        Parser {
             lexer,
             current_token,
             peek_token,
             errors: vec![],
-        };
-
-        return parser;
+        }
     }
 
     // Public methods
@@ -101,11 +101,11 @@ impl<'a> Parser<'a> {
             self.next_token();
         }
 
-        if self.errors.len() > 0 {
+        if !self.errors.is_empty() {
             return Err(self.errors.clone());
         }
 
-        return Ok(program);
+        Ok(program)
     }
 
     fn next_token(&mut self) -> Token {
@@ -114,7 +114,7 @@ impl<'a> Parser<'a> {
             .lexer
             .next_token()
             .expect("Failed to read next_token in parser");
-        return self.peek_token.clone();
+        self.peek_token.clone()
     }
 
     fn current_token_is(&self, token_kind: TokenKind) -> bool {
@@ -131,10 +131,10 @@ impl<'a> Parser<'a> {
             return Ok(());
         }
 
-        return Err(format!(
+        Err(format!(
             "expected token: {} but got {}",
             token_kind, self.peek_token.kind
-        ));
+        ))
     }
 
     fn expect_current(&mut self, token_kind: TokenKind) -> Result<(), ParseError> {
@@ -143,10 +143,10 @@ impl<'a> Parser<'a> {
             return Ok(());
         }
 
-        return Err(format!(
+        Err(format!(
             "expected token: {} but got {}",
             token_kind, self.current_token.kind
-        ));
+        ))
     }
 
     fn parse_function_params(&mut self) -> Result<Vec<Identifier>, ParseError> {
@@ -276,7 +276,7 @@ impl<'a> Parser<'a> {
             let body = Box::new(self.parse_block_statement()?);
 
             if !self.current_token_is(TokenKind::RightBrace) {
-                return Err(format!("expected to close the statement with a right brace"))
+                return Err("expected to close the statement with a right brace".to_string())
             }
 
             if self.peek_token_is(TokenKind::Semicolon) {
@@ -293,7 +293,7 @@ impl<'a> Parser<'a> {
             }));
         }
 
-        Err(format!("expected to close the block with a right brace."))
+        Err("expected to close the block with a right brace.".to_string())
     }
 
     fn parse_return_statement(&mut self) -> Result<Statement, ParseError> {
@@ -380,13 +380,13 @@ impl<'a> Parser<'a> {
                 // parse alternate
 
                 if !self.current_token_is(TokenKind::LeftBrace) {
-                    return Err(format!("expected to open the block with left brace"));
+                    return Err("expected to open the block with left brace".to_string());
                 }
 
                 alternate = Some(Box::new(self.parse_block_statement()?));
 
                 if !self.current_token_is(TokenKind::RightBrace) {
-                    return Err(format!("expected to close the block with right brace"));
+                    return Err("expected to close the block with right brace".to_string());
                 }
             }
         }
@@ -438,7 +438,7 @@ impl<'a> Parser<'a> {
             span: self.current_token.span.clone(),
         }));
 
-        return Ok(bool_literal);
+        Ok(bool_literal)
     }
 
     fn parse_expression(
@@ -491,7 +491,7 @@ impl<'a> Parser<'a> {
                 span,
             }),
             TokenKind::Integer(value) => Expression::Literal(Literal::Integer(Integer {
-                raw: value.clone(),
+                raw: *value,
                 span,
             })),
             TokenKind::String(value) => Expression::Literal(Literal::String(StringType {
@@ -532,7 +532,7 @@ impl<'a> Parser<'a> {
             }
         };
 
-        return Ok(expr);
+        Ok(expr)
     }
 
     fn parse_infix_expression(
@@ -574,7 +574,7 @@ impl<'a> Parser<'a> {
 
             TokenKind::LeftParen => {
                 self.next_token(); // consume the identifier token
-                return Some(self.parse_function_call_expression(left, left_start));
+                Some(self.parse_function_call_expression(left, left_start))
             }
 
             // TODO - Implement array index epxression parser

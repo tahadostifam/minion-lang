@@ -8,6 +8,12 @@ pub struct Program {
     pub span: Span,
 }
 
+impl Default for Program {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Program {
     pub fn new() -> Self {
         Self { body: vec![], span: Span::new_empty_span() }

@@ -6,12 +6,12 @@ use ast::{
     statement::{BlockStatement, Function, If, Return, Statement},
     Node,
 };
-use builtins::BuiltIns;
+use builtins::BUILT_INS;
 use object::{
     env::{Env, Environment},
     object::{EvalError, Object},
 };
-use std::{cell::RefCell, rc::Rc};
+use std::{borrow::Borrow, cell::RefCell, rc::Rc};
 use token::{Token, TokenKind};
 
 mod evaluator_test;
@@ -61,7 +61,7 @@ fn eval_function_statement(
     env: &Env,
 ) -> Result<Rc<Object>, EvalError> {
     // we prevent overwriting built-in functions!
-    match BuiltIns.get(name.as_str()) {
+    match BUILT_INS.borrow().get(name.as_str()) {
         Some(_) => Err(format!(
             "redeclaring built-in function {} is not allowed",
             name
@@ -130,13 +130,13 @@ fn eval_expression(expr: Expression, env: &Env) -> Result<Rc<Object>, EvalError>
 
                 let args = eval_expressions(&arguments, env)?;
 
-                match BuiltIns.get(name.as_str()) {
+                match BUILT_INS.borrow().get(name.as_str()) {
                     Some(bfn) => {
                         Ok(bfn(args))
                     }
                     None => {
                         let func = env
-                            .borrow()
+                            .borrow_mut()
                             .get(&name)
                             .unwrap_or_else(|| panic!("{} not declared", name));
 
@@ -184,9 +184,9 @@ fn eval_expression(expr: Expression, env: &Env) -> Result<Rc<Object>, EvalError>
 }
 
 fn eval_identifier(identifier: &str, env: &Env) -> Result<Rc<Object>, EvalError> {
-    match env.borrow().get(identifier) {
+    match env.borrow_mut().get(identifier) {
         Some(obj) => Ok(obj),
-        None => match BuiltIns.get(identifier) {
+        None => match BUILT_INS.borrow().get(identifier) {
             Some(obj) => Ok(Rc::new(Object::Builtin(*obj))),
             None => Err(format!("unknown identifier {}", identifier)),
         },

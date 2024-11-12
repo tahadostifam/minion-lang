@@ -1,12 +1,8 @@
-use lazy_static::lazy_static;
 use object::object::BuiltinFunc;
 use std::collections::HashMap;
+use std::sync::LazyLock;
 
 mod stdio;
-
-lazy_static! {
-    pub static ref BuiltIns: BuiltinHashTable = BuiltinLoader::new();
-}
 
 type BuiltinHashTable = HashMap<&'static str, BuiltinFunc>;
 
@@ -24,3 +20,5 @@ impl BuiltinLoader {
         ht.insert("clear", stdio::builtin_func_clear_screen);
     }
 }
+
+pub static BUILT_INS: LazyLock<BuiltinHashTable> = LazyLock::new(|| BuiltinLoader::new());

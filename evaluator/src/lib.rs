@@ -28,7 +28,7 @@ fn eval_block_statements(statements: &Vec<Statement>, env: &Env) -> Result<Rc<Ob
     let mut result = Rc::new(Object::Null);
 
     for statement in statements {
-        result = eval_statement(&statement, env)?;
+        result = eval_statement(statement, env)?;
     }
 
     Ok(result)
@@ -132,17 +132,17 @@ fn eval_expression(expr: Expression, env: &Env) -> Result<Rc<Object>, EvalError>
 
                 match BuiltIns.get(name.as_str()) {
                     Some(bfn) => {
-                        return Ok(bfn(args));
+                        Ok(bfn(args))
                     }
                     None => {
                         let func = env
                             .borrow()
                             .get(&name)
-                            .expect(format!("{} not declared", name).as_str());
+                            .unwrap_or_else(|| panic!("{} not declared", name));
 
                         let result = match &*func {
                             Object::Function(params, body, env) => {
-                                let mut env = Environment::new_enclosed_environment(&env);
+                                let mut env = Environment::new_enclosed_environment(env);
 
                                 params.iter().enumerate().for_each(|(i, param)| {
                                     env.set(param.name.clone(), args[i].clone());
@@ -156,12 +156,12 @@ fn eval_expression(expr: Expression, env: &Env) -> Result<Rc<Object>, EvalError>
                             f => Err(format!("expected {} to be a function", f)),
                         };
 
-                        return Ok(result?);
+                        result
                     }
                 }
             }
             _ => {
-                return Err(format!(
+                Err(format!(
                     "expected to get function declaratino from the object store but got {:?}",
                     call
                 ))
@@ -173,12 +173,12 @@ fn eval_expression(expr: Expression, env: &Env) -> Result<Rc<Object>, EvalError>
             operator, operand, ..
         }) => {
             let val = eval_expression(*operand, &Rc::clone(env))?;
-            return eval_prefix(operator.kind, &val);
+            eval_prefix(operator.kind, &val)
         }
         Expression::Infix(binary_expression) => {
             let left = eval_expression(*binary_expression.left, &Rc::clone(env))?;
             let right = eval_expression(*binary_expression.right, &Rc::clone(env))?;
-            return eval_infix(binary_expression.operator, &left, &right);
+            eval_infix(binary_expression.operator, &left, &right)
         }
     }
 }
@@ -195,7 +195,7 @@ fn eval_identifier(identifier: &str, env: &Env) -> Result<Rc<Object>, EvalError>
 
 fn unwrap_return(obj: Rc<Object>) -> Result<Rc<Object>, EvalError> {
     if let Object::ReturnValue(val) = &*obj {
-        Ok(Rc::clone(&val))
+        Ok(Rc::clone(val))
     } else {
         Ok(obj)
     }
@@ -219,31 +219,31 @@ fn eval_variable_declaration(
 fn eval_infix(operator: Token, left: &Object, right: &Object) -> Result<Rc<Object>, EvalError> {
     match (left, right) {
         (Object::Integer(left), Object::Integer(right)) => {
-            return eval_integer_infix(operator.kind, *left, *right);
+            eval_integer_infix(operator.kind, *left, *right)
         }
         (Object::Boolean(left), Object::Boolean(right)) => {
-            return eval_boolean_infix(operator.kind, *left, *right);
+            eval_boolean_infix(operator.kind, *left, *right)
         }
         (Object::String(left), Object::String(right)) => {
-            return eval_string_infix(operator.kind, left, right);
+            eval_string_infix(operator.kind, left, right)
         }
         (Object::String(left), Object::Integer(right)) => {
-            return eval_string_infix(operator.kind, left, &right.to_string())
+            eval_string_infix(operator.kind, left, &right.to_string())
         }
         (Object::Integer(left), Object::String(right)) => {
-            return eval_string_infix(operator.kind, &left.to_string(), right)
+            eval_string_infix(operator.kind, &left.to_string(), right)
         }
         (Object::Boolean(left), Object::String(right)) => {
-            return eval_string_infix(operator.kind, &left.to_string(), right)
+            eval_string_infix(operator.kind, &left.to_string(), right)
         }
         (Object::String(left), Object::Boolean(right)) => {
-            return eval_string_infix(operator.kind, left, &right.to_string())
+            eval_string_infix(operator.kind, left, &right.to_string())
         }
         _ => {
-            return Err(format!(
+            Err(format!(
                 "eval infix not available for operator: {}",
                 operator.kind
-            ));
+            ))
         }
     }
 }
@@ -330,8 +330,8 @@ fn eval_prefix_minus(expr: &Object) -> Result<Rc<Object>, EvalError> {
 
 fn is_truthy(obj: &Object) -> bool {
     match obj {
-        Object::Null => return false,
-        Object::Boolean(false) => return false,
+        Object::Null => false,
+        Object::Boolean(false) => false,
         _ => true,
     }
 }

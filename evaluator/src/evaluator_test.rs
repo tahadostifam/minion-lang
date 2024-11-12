@@ -13,7 +13,7 @@ mod tests {
             match Parser::parse(input.to_string()) {
                 Ok(node) => match eval(node, &env) {
                     Ok(evaluated) => assert_eq!(&format!("{}", evaluated), expected),
-                    Err(e) => assert_eq!(&format!("{}", e), expected),
+                    Err(e) => assert_eq!(&e.to_string(), expected),
                 },
                 Err(e) => panic!("parse error: {}", e[0]),
             }

@@ -6,8 +6,8 @@ use ast::{
     statement::{BlockStatement, Function, If, Return, Statement},
     Node,
 };
+use builtins::BuiltIns;
 use object::{
-    builtins::BuiltIns,
     env::{Env, Environment},
     object::{EvalError, Object},
 };
@@ -61,7 +61,7 @@ fn eval_function_statement(
     env: &Env,
 ) -> Result<Rc<Object>, EvalError> {
     // we prevent overwriting built-in functions!
-    match BuiltIns.iter().find(|b| b.0 == name) {
+    match BuiltIns.get(name.as_str()) {
         Some(_) => Err(format!(
             "redeclaring built-in function {} is not allowed",
             name
@@ -130,9 +130,9 @@ fn eval_expression(expr: Expression, env: &Env) -> Result<Rc<Object>, EvalError>
 
                 let args = eval_expressions(&arguments, env)?;
 
-                match BuiltIns.iter().find(|b| b.0 == name) {
+                match BuiltIns.get(name.as_str()) {
                     Some(bfn) => {
-                        return Ok(bfn.1(args));
+                        return Ok(bfn(args));
                     }
                     None => {
                         let func = env
@@ -186,8 +186,8 @@ fn eval_expression(expr: Expression, env: &Env) -> Result<Rc<Object>, EvalError>
 fn eval_identifier(identifier: &str, env: &Env) -> Result<Rc<Object>, EvalError> {
     match env.borrow().get(identifier) {
         Some(obj) => Ok(obj),
-        None => match BuiltIns.iter().find(|&&b| b.0 == identifier) {
-            Some(obj) => Ok(Rc::new(Object::Builtin(obj.1))),
+        None => match BuiltIns.get(identifier) {
+            Some(obj) => Ok(Rc::new(Object::Builtin(*obj))),
             None => Err(format!("unknown identifier {}", identifier)),
         },
     }

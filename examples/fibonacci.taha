@@ -1,6 +1,4 @@
 fn fibonacci(n) {
-    print("fibonacci->" + n);
-
     if (n <= 0) {
         ret 0;
     } else if (n == 1) {
@@ -13,4 +11,3 @@ fn fibonacci(n) {
 #a = fibonacci(2);
 
 print("Here is the Result: " + a);
-print("Here is the Result: " + true);

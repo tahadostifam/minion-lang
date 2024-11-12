@@ -10,10 +10,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "builtins"
+version = "0.1.0"
+dependencies = [
+ "lazy_static",
+ "object",
+]
+
+[[package]]
 name = "evaluator"
 version = "0.1.0"
 dependencies = [
  "ast",
+ "builtins",
  "object",
  "parser",
  "token",
@@ -37,7 +46,6 @@ name = "object"
 version = "0.1.0"
 dependencies = [
  "ast",
- "lazy_static",
 ]
 
 [[package]]

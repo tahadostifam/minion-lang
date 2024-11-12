@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 ast = { path = "../ast", version = "*" }
-object ={ path = "../object", version = "*" }
-token ={ path = "../token", version = "*" }
-parser ={ path = "../parser", version = "*" }
+object = { path = "../object", version = "*" }
+token = { path = "../token", version = "*" }
+parser = { path = "../parser", version = "*" }
+builtins = { path = "../builtins", version = "*" }

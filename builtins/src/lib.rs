@@ -1,24 +1,15 @@
-use object::object::BuiltinFunc;
-use std::collections::HashMap;
-use std::sync::LazyLock;
+use macros::BuiltinHashMap;
+use std::{collections::HashMap, sync::LazyLock};
 
-mod stdio;
+pub mod macros;
+pub mod object_converter;
+pub mod stdio;
 
-type BuiltinHashTable = HashMap<&'static str, BuiltinFunc>;
-
-struct BuiltinLoader {}
-
-impl BuiltinLoader {
-    pub fn new() -> BuiltinHashTable {
-        let mut ht: BuiltinHashTable = HashMap::new();
-        BuiltinLoader::load_funcs(&mut ht);
-        return ht;
+pub static BUILT_INS: LazyLock<BuiltinHashMap> = LazyLock::new(|| {
+    builtin_builder! {
+        "print" => stdio::builtin_func_print,
+        "println" => stdio::builtin_func_println,
+        "input" => stdio::builtin_func_input,
+        "clear" => stdio::builtin_func_clear_screen
     }
-
-    fn load_funcs(ht: &mut BuiltinHashTable) {
-        ht.insert("print", stdio::builtin_func_print);
-        ht.insert("clear", stdio::builtin_func_clear_screen);
-    }
-}
-
-pub static BUILT_INS: LazyLock<BuiltinHashTable> = LazyLock::new(|| BuiltinLoader::new());
+});

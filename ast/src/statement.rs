@@ -21,6 +21,7 @@ impl fmt::Display for Statement {
         write!(f, "{:?}", self)
     }
 }
+
 #[derive(Debug, Clone)]
 pub struct Function {
     pub name: String,

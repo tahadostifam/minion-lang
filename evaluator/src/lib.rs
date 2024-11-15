@@ -120,6 +120,17 @@ fn eval_expressions(exprs: &Vec<Expression>, env: &Env) -> Result<Vec<Rc<Object>
     Ok(list)
 }
 
+fn validate_func_args_len(params_len: usize, args_len: usize) -> Result<(), EvalError> {
+    if params_len != args_len {
+        Err(format!(
+            "wrong number of arguments! wanted {} got {}",
+            params_len, args_len
+        ))
+    } else {
+        Ok(())
+    }
+}
+
 fn eval_expression(expr: Expression, env: &Env) -> Result<Rc<Object>, EvalError> {
     match expr {
         Expression::FunctionCall(FunctionCall {
@@ -131,9 +142,7 @@ fn eval_expression(expr: Expression, env: &Env) -> Result<Rc<Object>, EvalError>
                 let args = eval_expressions(&arguments, env)?;
 
                 match BUILT_INS.borrow().get(name.as_str()) {
-                    Some(bfn) => {
-                        Ok(bfn(args))
-                    }
+                    Some(bfn) => Ok(bfn(args)),
                     None => {
                         let func = env
                             .borrow_mut()
@@ -143,6 +152,10 @@ fn eval_expression(expr: Expression, env: &Env) -> Result<Rc<Object>, EvalError>
                         let result = match &*func {
                             Object::Function(params, body, env) => {
                                 let mut env = Environment::new_enclosed_environment(env);
+
+                                if let Err(e) = validate_func_args_len(params.len(), args.len()) {
+                                    return Err(e);
+                                }
 
                                 params.iter().enumerate().for_each(|(i, param)| {
                                     env.set(param.name.clone(), args[i].clone());
@@ -160,12 +173,10 @@ fn eval_expression(expr: Expression, env: &Env) -> Result<Rc<Object>, EvalError>
                     }
                 }
             }
-            _ => {
-                Err(format!(
-                    "expected to get function declaratino from the object store but got {:?}",
-                    call
-                ))
-            }
+            _ => Err(format!(
+                "expected to get function declaratin from the object store but got {:?}",
+                call
+            )),
         },
         Expression::Literal(literal) => eval_literal(&literal),
         Expression::Identifier(identifier) => eval_identifier(identifier.name.as_str(), env),
@@ -239,12 +250,10 @@ fn eval_infix(operator: Token, left: &Object, right: &Object) -> Result<Rc<Objec
         (Object::String(left), Object::Boolean(right)) => {
             eval_string_infix(operator.kind, left, &right.to_string())
         }
-        _ => {
-            Err(format!(
-                "eval infix not available for operator: {}",
-                operator.kind
-            ))
-        }
+        _ => Err(format!(
+            "eval infix not available for operator: {}",
+            operator.kind
+        )),
     }
 }
 

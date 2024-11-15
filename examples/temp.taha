@@ -1,1 +1,5 @@
-print("Hello World");
+fn sum(a, b) {
+    println(a + b);
+}
+
+sum(1, 2);

@@ -69,8 +69,50 @@ impl Lexer {
 
         let token_kind = match self.ch {
             ' ' => return self.next_token(),
-            '+' => TokenKind::Plus,
-            '-' => TokenKind::Minus,
+            '+' => {
+                if self.peek_char() == '+' {
+                    self.read_char();
+                    self.read_char();
+                    return Ok(Token {
+                        kind: TokenKind::Increment,
+                        span: Span {
+                            start: self.pos - 2,
+                            end: self.pos - 1,
+                        },
+                    });  
+                } else {
+                    self.read_char();
+                    return Ok(Token {
+                        kind: TokenKind::Plus,
+                        span: Span {
+                            start: self.pos - 1,
+                            end: self.pos - 1,
+                        },
+                    });
+                }
+            }
+            '-' => {
+                if self.peek_char() == '-' {
+                    self.read_char();
+                    self.read_char();
+                    return Ok(Token {
+                        kind: TokenKind::Decrement,
+                        span: Span {
+                            start: self.pos - 2,
+                            end: self.pos - 1,
+                        },
+                    });                    
+                } else {
+                    self.read_char();
+                    return Ok(Token {
+                        kind: TokenKind::Minus,
+                        span: Span {
+                            start: self.pos - 1,
+                            end: self.pos - 1,
+                        },
+                    });
+                }
+            }
             '*' => TokenKind::Asterisk,
             '/' => TokenKind::Slash,
             '%' => TokenKind::Modulo,
@@ -271,7 +313,9 @@ impl Lexer {
             }
 
             if self.is_eof() {
-                return Err("expected closing string with double quotation but got nothing".to_string());
+                return Err(
+                    "expected closing string with double quotation but got nothing".to_string(),
+                );
             }
         }
 

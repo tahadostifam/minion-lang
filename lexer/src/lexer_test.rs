@@ -30,7 +30,7 @@ mod tests {
     #[test]
     fn test_code_1() {
         let code = "
-        if a == 2 { 
+        if a == 2 {
             puts \"Hello World\";
         }
 
@@ -101,20 +101,9 @@ mod tests {
     }
 
     #[test]
-    fn test_comments_and_operators() {
-        assert_tokens(
-            "// Comment 
-
-        ++",
-            Some(&vec![TokenKind::Plus, TokenKind::Plus]),
-            None,
-        );
-    }
-
-    #[test]
     fn test_symbols() {
         assert_tokens(
-            "() {} , # \" |",
+            "() {} , # |",
             Some(&vec![
                 TokenKind::LeftParen,
                 TokenKind::RightParen,
@@ -122,7 +111,6 @@ mod tests {
                 TokenKind::RightBrace,
                 TokenKind::Comma,
                 TokenKind::Hashtag,
-                TokenKind::DoubleQuote,
                 TokenKind::Pipe,
             ]),
             None,
@@ -298,7 +286,9 @@ mod tests {
         assert_tokens(
             "foo_bar()",
             Some(&vec![
-                TokenKind::Identifier { name: "foo_bar".to_string() },
+                TokenKind::Identifier {
+                    name: "foo_bar".to_string(),
+                },
                 TokenKind::LeftParen,
                 TokenKind::RightParen,
             ]),
@@ -308,7 +298,9 @@ mod tests {
         assert_tokens(
             "foo_bar(1, 2)",
             Some(&vec![
-                TokenKind::Identifier { name: "foo_bar".to_string() },
+                TokenKind::Identifier {
+                    name: "foo_bar".to_string(),
+                },
                 TokenKind::LeftParen,
                 TokenKind::Integer(1),
                 TokenKind::Comma,
@@ -320,21 +312,35 @@ mod tests {
     }
 
     #[test]
-    fn test_is_whitespace() {
-        let input = " a 
-";
-
-        assert!(Lexer::is_whitespace(input.chars().next().unwrap()));
-        assert!(!Lexer::is_whitespace(input.chars().nth(1).unwrap()));
-        assert!(Lexer::is_whitespace(input.chars().nth(2).unwrap()));
-        assert!(Lexer::is_whitespace(input.chars().nth(3).unwrap()));
-    }
-
-    #[test]
     fn test_str() {
         assert_tokens(
             "\"Taha-Lang\"",
             Some(&vec![TokenKind::String(String::from("Taha-Lang"))]),
+            None,
+        );
+    }
+
+    #[test]
+    fn test_increment_and_decrement() {
+        assert_tokens(
+            "i++",
+            Some(&vec![
+                TokenKind::Identifier {
+                    name: "i".to_string(),
+                },
+                TokenKind::Increment,
+            ]),
+            None,
+        );
+
+        assert_tokens(
+            "i--",
+            Some(&vec![
+                TokenKind::Identifier {
+                    name: "i".to_string(),
+                },
+                TokenKind::Decrement,
+            ]),
             None,
         );
     }

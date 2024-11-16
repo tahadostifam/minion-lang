@@ -10,6 +10,7 @@ pub enum Statement {
     If(If),
     Return(Return),
     Function(Function),
+    For(For),
 }
 
 pub fn format_statements(stmts: &Vec<Statement>) -> String {
@@ -20,6 +21,15 @@ impl fmt::Display for Statement {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:?}", self)
     }
+}
+
+#[derive(Debug, Clone)]
+pub struct For {
+    pub initializer: Option<Variable>,
+    pub condition: Option<Expression>,
+    pub increment: Option<Expression>,
+    pub body: BlockStatement,
+    pub span: Span,
 }
 
 #[derive(Debug, Clone)]

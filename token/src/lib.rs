@@ -20,6 +20,8 @@ pub enum TokenKind {
     Slash,
     Asterisk,
     Modulo,
+    Increment,
+    Decrement,
 
     // Symbols
     Assign,

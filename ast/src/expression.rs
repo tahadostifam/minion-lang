@@ -8,6 +8,22 @@ pub enum Expression {
     Prefix(UnaryExpression),
     Infix(BinaryExpression),
     FunctionCall(FunctionCall),
+    UnaryOperator(UnaryOperator),
+}
+
+#[derive(Debug, Clone)]
+pub enum UnaryOperatorType {
+    PreIncrement,
+    PreDecrement,
+    PostIncrement,
+    PostDecrement,
+}
+
+#[derive(Debug, Clone)]
+pub struct UnaryOperator {
+    pub identifer: Identifier,
+    pub ty: UnaryOperatorType,
+    pub span: Span,
 }
 
 #[derive(Debug, Clone)]
@@ -113,9 +129,21 @@ impl fmt::Display for Literal {
     }
 }
 
+impl fmt::Display for UnaryOperatorType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            UnaryOperatorType::PreIncrement => write!(f, "++"),
+            UnaryOperatorType::PreDecrement => write!(f, "--"),
+            UnaryOperatorType::PostIncrement => write!(f, "++"),
+            UnaryOperatorType::PostDecrement => write!(f, "--"),
+        }
+    }
+}
+
 impl fmt::Display for Expression {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Expression::UnaryOperator(unop) => write!(f, "{}{}", unop.identifer, unop.ty),
             Expression::Identifier(identifier) => write!(f, "{}", identifier.name),
             Expression::Literal(literal) => write!(f, "{}", literal),
             Expression::Prefix(UnaryExpression {

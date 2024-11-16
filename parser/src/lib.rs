@@ -1,10 +1,10 @@
 use ast::{
     expression::{
         BinaryExpression, Boolean, Expression, FunctionCall, Identifier, Integer, Literal,
-        StringType, UnaryExpression,
+        StringType, UnaryExpression, UnaryOperator, UnaryOperatorType,
     },
     program::Program,
-    statement::{BlockStatement, Function, If, Return, Statement, Variable},
+    statement::{BlockStatement, For, Function, If, Return, Statement, Variable},
     Node,
 };
 use lexer::Lexer;
@@ -34,8 +34,6 @@ impl<'a> Parser<'a> {
             .next_token()
             .expect("An error raised when reading peek_token by lexer at parser");
 
-        
-
         Parser {
             lexer,
             current_token,
@@ -59,8 +57,76 @@ impl<'a> Parser<'a> {
             TokenKind::Function => self.parse_function_statement(),
             TokenKind::Return => self.parse_return_statement(),
             TokenKind::Hashtag => self.parse_variable_declaration(),
+            TokenKind::For => self.parse_for_statement(),
             _ => self.parse_expression_statement(),
         }
+    }
+
+    // for #i = 0; i < 10; i++ {
+    //     println(i);
+    // }
+    // ANCHOR
+    fn parse_for_statement(&mut self) -> Result<Statement, ParseError> {
+        let start = self.current_token.span.start;
+        self.next_token(); // consume for token
+
+        let mut initializer: Option<Variable> = None;
+        if let Statement::VariableDeclaration(var) = self.parse_variable_declaration()? {
+            initializer = Some(var);
+        }
+
+        self.expect_current(TokenKind::Semicolon)?;
+
+        let mut condition: Option<Expression> = None;
+        match self.parse_expression(Precedence::Lowest) {
+            Ok(result) => {
+                condition = Some(result.0);
+            }
+            Err(e) => {
+                dbg!(e.clone());
+                return Err(e);
+            }
+        }
+
+        dbg!(condition);
+        dbg!(self.current_token.kind.clone());
+
+        self.expect_current(TokenKind::Semicolon)?;
+        self.next_token();
+
+        dbg!(self.current_token.kind.clone());
+
+        let mut increment: Option<Expression> = None;
+        match self.parse_expression(Precedence::Lowest) {
+            Ok(result) => {
+                dbg!(result.clone());
+                increment = Some(result.0);
+            }
+            Err(e) => {
+                return Err(e);
+            }
+        }
+
+        dbg!(increment);
+
+        std::process::exit(0);
+
+        // self.expect_current(TokenKind::RightBrace)?;
+
+        // let body = self.parse_block_statement()?;
+
+        // self.expect_peek(TokenKind::RightBrace)?;
+
+        Ok(Statement::For(For {
+            initializer,
+            condition,
+            increment,
+            body: todo!(),
+            span: Span {
+                start,
+                end: self.current_token.span.end,
+            },
+        }))
     }
 
     fn parse_variable_declaration(&mut self) -> Result<Statement, ParseError> {
@@ -276,7 +342,7 @@ impl<'a> Parser<'a> {
             let body = Box::new(self.parse_block_statement()?);
 
             if !self.current_token_is(TokenKind::RightBrace) {
-                return Err("expected to close the statement with a right brace".to_string())
+                return Err("expected to close the statement with a right brace".to_string());
             }
 
             if self.peek_token_is(TokenKind::Semicolon) {
@@ -412,7 +478,6 @@ impl<'a> Parser<'a> {
         Ok(Statement::Expression(expr))
     }
 
-    // Parse expressions
     fn parse_function_call_expression(
         &mut self,
         left: Expression,
@@ -454,6 +519,7 @@ impl<'a> Parser<'a> {
             match self.parse_infix_expression(left.clone(), left_start) {
                 Some(infix) => {
                     left = infix?;
+                    dbg!(left.clone());
 
                     if let Expression::Infix(b) = left.clone() {
                         left_start = b.span.start;
@@ -466,7 +532,7 @@ impl<'a> Parser<'a> {
                             start: left_start,
                             end: self.current_token.span.end,
                         },
-                    ))
+                    ));
                 }
             }
         }
@@ -485,15 +551,77 @@ impl<'a> Parser<'a> {
     fn parse_prefix_expression(&mut self) -> Result<Expression, ParseError> {
         let span = self.current_token.span.clone();
 
-        let expr = match &self.current_token.kind {
-            TokenKind::Identifier { name } => Expression::Identifier(Identifier {
-                name: name.clone(),
-                span,
-            }),
-            TokenKind::Integer(value) => Expression::Literal(Literal::Integer(Integer {
-                raw: *value,
-                span,
-            })),
+        let expr = match &self.current_token.clone().kind {
+            token_kind @ TokenKind::Increment | token_kind @ TokenKind::Decrement => {
+                let ty = match token_kind {
+                    TokenKind::Increment => UnaryOperatorType::PreIncrement,
+                    TokenKind::Decrement => UnaryOperatorType::PreDecrement,
+                    _ => {
+                        return Err(format!(
+                            "expected increment or decrement token but got {}",
+                            self.current_token.kind
+                        ))
+                    }
+                };
+
+                self.next_token(); // consume the operator
+
+                match self.current_token.kind.clone() {
+                    TokenKind::Identifier { name } => {
+                        return Ok(Expression::UnaryOperator(UnaryOperator {
+                            identifer: {
+                                Identifier {
+                                    name,
+                                    span: span.clone(),
+                                }
+                            },
+                            ty,
+                            span: Span {
+                                start: span.start,
+                                end: self.current_token.span.end,
+                            },
+                        }));
+                    }
+                    _ => {
+                        dbg!(self.current_token.kind.clone());
+                        return Err(format!(
+                            "expected identifier but got {}",
+                            self.current_token.kind
+                        ));
+                    }
+                }
+            }
+            TokenKind::Identifier { name } => {
+                let identifier = Identifier {
+                    name: name.clone(),
+                    span: span.clone(),
+                };
+
+                if self.peek_token_is(TokenKind::Increment) {
+                    self.next_token();
+                    return Ok(Expression::UnaryOperator(UnaryOperator {
+                        identifer: identifier.clone(),
+                        ty: UnaryOperatorType::PostIncrement,
+                        span,
+                    }));
+                } else if self.peek_token_is(TokenKind::Decrement) {
+                    self.next_token();
+                    return Ok(Expression::UnaryOperator(UnaryOperator {
+                        identifer: identifier.clone(),
+                        ty: UnaryOperatorType::PostDecrement,
+                        span,
+                    }));
+                } else {
+                    self.next_token();
+                    return Ok(Expression::Identifier(Identifier {
+                        name: identifier.name,
+                        span,
+                    }));
+                }
+            }
+            TokenKind::Integer(value) => {
+                Expression::Literal(Literal::Integer(Integer { raw: *value, span }))
+            }
             TokenKind::String(value) => Expression::Literal(Literal::String(StringType {
                 raw: value.clone(),
                 span,
@@ -540,7 +668,7 @@ impl<'a> Parser<'a> {
         left: Expression,
         left_start: usize,
     ) -> Option<Result<Expression, ParseError>> {
-        match self.peek_token.kind {
+        match &self.peek_token.kind {
             TokenKind::Plus
             | TokenKind::Minus
             | TokenKind::Asterisk
@@ -551,10 +679,12 @@ impl<'a> Parser<'a> {
             | TokenKind::LessEqual
             | TokenKind::LessThan
             | TokenKind::GreaterEqual
-            | TokenKind::GreaterThan => {
+            | TokenKind::GreaterThan
+            | TokenKind::Identifier { .. } => {
                 self.next_token(); // consume the first part of the expression
 
                 let operator = self.current_token.clone();
+
                 let precedence = determine_token_precedence(self.current_token.kind.clone());
 
                 self.next_token(); // consume the operator
@@ -571,7 +701,6 @@ impl<'a> Parser<'a> {
                     },
                 })))
             }
-
             TokenKind::LeftParen => {
                 self.next_token(); // consume the identifier token
                 Some(self.parse_function_call_expression(left, left_start))

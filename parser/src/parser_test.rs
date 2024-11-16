@@ -54,7 +54,7 @@ mod tests {
         if (1 < 2)
         {
             print(1);
-        } 
+        }
         else if (2 == 2) {
             print(2);
         }
@@ -148,5 +148,43 @@ mod tests {
     #[test]
     fn test_parse_modulo() {
         assert_parse("3 * 2");
+    }
+
+    #[test]
+    fn test_comparative_expression() {
+        assert_parse("i < 10;");
+        // assert_parse("i > 10;");
+        // assert_parse("i <= 10");
+        // assert_parse("i >= 10");
+        // assert_parse("i == 10");
+        // assert_parse("i != 10");
+    }
+
+    #[test]
+    fn test_increment_decrement_expression() {
+        assert_parse("++i");
+        assert_parse("--i");
+        assert_parse("i++");
+        assert_parse("i--");
+    }
+
+    #[test]
+    fn test_parse_for_statement() {
+        assert_parse(
+            "
+            for #i = 0; i < 10; i++ {
+
+            }
+            ",
+        );
+    }
+
+    #[test]
+    fn test_identifier_and_comparative() {
+        assert_parse(
+            "
+            i < j
+            ",
+        );
     }
 }

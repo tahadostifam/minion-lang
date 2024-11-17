@@ -1,5 +1,5 @@
-fn sum(a, b) {
-    println(a + b);
-}
+#i = 10;
 
-sum(1, 2);
+println(i--);
+
+println(i);

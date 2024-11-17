@@ -1,9 +1,9 @@
 use ast::{
     expression::{
         Boolean, Expression, FunctionCall, Identifier, Integer, Literal, StringType,
-        UnaryExpression,
+        UnaryExpression, UnaryOperator,
     },
-    statement::{BlockStatement, Function, If, Return, Statement},
+    statement::{BlockStatement, Function, If, Return, Statement, Variable},
     Node,
 };
 use builtins::BUILT_INS;
@@ -11,7 +11,7 @@ use object::{
     env::{Env, Environment},
     object::{EvalError, Object},
 };
-use std::{borrow::Borrow, cell::RefCell, rc::Rc};
+use std::{alloc::GlobalAlloc, borrow::Borrow, cell::RefCell, rc::Rc};
 use token::{Token, TokenKind};
 
 mod evaluator_test;
@@ -36,6 +36,13 @@ fn eval_block_statements(statements: &Vec<Statement>, env: &Env) -> Result<Rc<Ob
 
 fn eval_statement(statement: &Statement, env: &Env) -> Result<Rc<Object>, EvalError> {
     match statement {
+        Statement::For(for_stmt) => eval_for_statement(
+            for_stmt.initializer.clone(),
+            for_stmt.condition.clone(),
+            for_stmt.increment.clone(),
+            for_stmt.body.clone(),
+            &env.clone(),
+        ),
         Statement::VariableDeclaration(variable) => {
             eval_variable_declaration(&variable.identifier, variable.expr.clone(), env)
         }
@@ -52,6 +59,30 @@ fn eval_statement(statement: &Statement, env: &Env) -> Result<Rc<Object>, EvalEr
             name, params, body, ..
         }) => eval_function_statement(name.clone(), params.clone(), *body.clone(), &env.clone()),
     }
+}
+
+fn eval_for_statement(
+    initializer: Option<Variable>,
+    condition: Option<Expression>,
+    increment: Option<Expression>,
+    body: Box<BlockStatement>,
+    env: &Env,
+) -> Result<Rc<Object>, EvalError> {
+    todo!();
+    // if let Some(var) = initializer {
+    //     eval_variable_declaration(&var.identifier.clone(), var.expr.clone(), env)?;
+    // }
+
+    // loop {
+    //     eval_block_statements(&body.body, env);
+
+    //     if let Some(expr) = condition {
+    //         eval_expression(condition, env)
+    //     }
+    //     break;
+    // }
+
+    // Ok(Rc::new(Object::Null))
 }
 
 fn eval_function_statement(
@@ -133,6 +164,7 @@ fn validate_func_args_len(params_len: usize, args_len: usize) -> Result<(), Eval
 
 fn eval_expression(expr: Expression, env: &Env) -> Result<Rc<Object>, EvalError> {
     match expr {
+        Expression::UnaryOperator(unop) => eval_unary_operator(unop, env),
         Expression::FunctionCall(FunctionCall {
             call, arguments, ..
         }) => match *call {
@@ -191,6 +223,49 @@ fn eval_expression(expr: Expression, env: &Env) -> Result<Rc<Object>, EvalError>
             let right = eval_expression(*binary_expression.right, &Rc::clone(env))?;
             eval_infix(binary_expression.operator, &left, &right)
         }
+    }
+}
+
+fn eval_unary_operator(unop: UnaryOperator, env: &Env) -> Result<Rc<Object>, EvalError> {
+    let mut scope = env.borrow_mut();
+    let object = scope.get(&unop.identifer.name);
+
+    if let Some(var) = object {
+        match *var {
+            Object::Integer(value) => {
+                let new_value = Rc::new(Object::Integer(match unop.ty {
+                    ast::expression::UnaryOperatorType::PreIncrement => value + 1,
+                    ast::expression::UnaryOperatorType::PostIncrement => value + 1,
+                    ast::expression::UnaryOperatorType::PreDecrement => value - 1,
+                    ast::expression::UnaryOperatorType::PostDecrement => value - 1,
+                }));
+
+                match unop.ty {
+                    ast::expression::UnaryOperatorType::PreIncrement
+                    | ast::expression::UnaryOperatorType::PreDecrement => {
+                        scope.set(unop.identifer.name, new_value.clone());
+                        return Ok(new_value);
+                    }
+                    ast::expression::UnaryOperatorType::PostIncrement
+                    | ast::expression::UnaryOperatorType::PostDecrement => {
+                        let temp = var;
+                        scope.set(unop.identifer.name, new_value.clone());
+                        return Ok(temp);
+                    }
+                };
+            }
+            _ => {
+                return Err(format!(
+                    "unary operation can only performed for number objects but got {}",
+                    var
+                ))
+            }
+        }
+    } else {
+        return Err(format!(
+            "variable {} is not initialized and can not be operated",
+            unop.identifer.name
+        ));
     }
 }
 

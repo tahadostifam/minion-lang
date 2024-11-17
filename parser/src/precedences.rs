@@ -1,3 +1,5 @@
+use core::fmt;
+
 use token::TokenKind;
 
 #[derive(Debug, Copy, Clone, PartialEq, PartialOrd)]
@@ -27,5 +29,31 @@ pub fn determine_token_precedence(token_kind: TokenKind) -> Precedence {
         TokenKind::LeftParen => Precedence::Call,
         TokenKind::LeftBracket => Precedence::Index,
         _ => Precedence::Lowest,
+    }
+}
+
+impl fmt::Display for Precedence {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Precedence::Lowest => write!(f, "lowest"),
+            Precedence::Equals => write!(f, "equals"),
+            Precedence::LessGreater => write!(f, "less_greater"),
+            Precedence::Sum => write!(f, "sum"),
+            Precedence::Product => write!(f, "product"),
+            Precedence::Prefix => write!(f, "prefix"),
+            Precedence::Call => write!(f, "call"),
+            Precedence::Index => write!(f, "index"),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Precedence;
+
+    #[test]
+    fn test_compare_precedences() {
+        assert!(Precedence::Lowest < Precedence::LessGreater);
+        assert!(Precedence::Call > Precedence::Sum);
     }
 }

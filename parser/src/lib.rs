@@ -62,98 +62,6 @@ impl<'a> Parser<'a> {
         }
     }
 
-    // for #i = 0; i < 10; i++ {
-    //     println(i);
-    // }
-    // ANCHOR
-    fn parse_for_statement(&mut self) -> Result<Statement, ParseError> {
-        let start = self.current_token.span.start;
-        self.next_token(); // consume for token
-
-        let mut initializer: Option<Variable> = None;
-        if let Statement::VariableDeclaration(var) = self.parse_variable_declaration()? {
-            initializer = Some(var);
-        }
-
-        self.expect_current(TokenKind::Semicolon)?;
-
-        let mut condition: Option<Expression> = None;
-        match self.parse_expression(Precedence::Lowest) {
-            Ok(result) => {
-                condition = Some(result.0);
-            }
-            Err(e) => {
-                dbg!(e.clone());
-                return Err(e);
-            }
-        }
-
-        dbg!(condition);
-        dbg!(self.current_token.kind.clone());
-
-        self.expect_current(TokenKind::Semicolon)?;
-        self.next_token();
-
-        dbg!(self.current_token.kind.clone());
-
-        let mut increment: Option<Expression> = None;
-        match self.parse_expression(Precedence::Lowest) {
-            Ok(result) => {
-                dbg!(result.clone());
-                increment = Some(result.0);
-            }
-            Err(e) => {
-                return Err(e);
-            }
-        }
-
-        dbg!(increment);
-
-        std::process::exit(0);
-
-        // self.expect_current(TokenKind::RightBrace)?;
-
-        // let body = self.parse_block_statement()?;
-
-        // self.expect_peek(TokenKind::RightBrace)?;
-
-        Ok(Statement::For(For {
-            initializer,
-            condition,
-            increment,
-            body: todo!(),
-            span: Span {
-                start,
-                end: self.current_token.span.end,
-            },
-        }))
-    }
-
-    fn parse_variable_declaration(&mut self) -> Result<Statement, ParseError> {
-        let start = self.current_token.span.start;
-        self.next_token(); // consume sharp token
-
-        let identifier = self.current_token.clone(); // export the name of the identifier
-        self.next_token(); // consume thte identofier
-
-        self.expect_current(TokenKind::Assign)?;
-
-        let (expr, span) = self.parse_expression(Precedence::Lowest)?;
-
-        if self.peek_token_is(TokenKind::Semicolon) {
-            self.next_token();
-        }
-
-        Ok(Statement::VariableDeclaration(Variable {
-            identifier,
-            expr,
-            span: Span {
-                start,
-                end: span.end,
-            },
-        }))
-    }
-
     // Private functionallities
     fn parse_program(&mut self) -> Result<Program, Vec<ParseError>> {
         let mut program = Program::new();
@@ -261,6 +169,99 @@ impl<'a> Parser<'a> {
     }
 
     // Parse statements
+
+    // for #i = 0; i < 10; i++ {
+    //     println(i);
+    // }
+    // ANCHOR
+    fn parse_for_statement(&mut self) -> Result<Statement, ParseError> {
+        let start = self.current_token.span.start;
+        self.next_token(); // consume for token
+
+        let mut initializer: Option<Variable> = None;
+        if let Statement::VariableDeclaration(var) = self.parse_variable_declaration()? {
+            initializer = Some(var);
+        }
+
+        self.expect_current(TokenKind::Semicolon)?;
+
+        let mut condition: Option<Expression> = None;
+        match self.parse_expression(Precedence::Lowest) {
+            Ok(result) => {
+                condition = Some(result.0);
+            }
+            Err(e) => {
+                dbg!(e.clone());
+                return Err(e);
+            }
+        }
+
+        dbg!(condition);
+        dbg!(self.current_token.kind.clone());
+
+        self.expect_current(TokenKind::Semicolon)?;
+        self.next_token();
+
+        dbg!(self.current_token.kind.clone());
+
+        let mut increment: Option<Expression> = None;
+        match self.parse_expression(Precedence::Lowest) {
+            Ok(result) => {
+                dbg!(result.clone());
+                increment = Some(result.0);
+            }
+            Err(e) => {
+                return Err(e);
+            }
+        }
+
+        dbg!(increment);
+
+        std::process::exit(0);
+
+        // self.expect_current(TokenKind::RightBrace)?;
+
+        // let body = self.parse_block_statement()?;
+
+        // self.expect_peek(TokenKind::RightBrace)?;
+
+        Ok(Statement::For(For {
+            initializer,
+            condition,
+            increment,
+            body: todo!(),
+            span: Span {
+                start,
+                end: self.current_token.span.end,
+            },
+        }))
+    }
+
+    fn parse_variable_declaration(&mut self) -> Result<Statement, ParseError> {
+        let start = self.current_token.span.start;
+        self.next_token(); // consume sharp token
+
+        let identifier = self.current_token.clone(); // export the name of the identifier
+        self.next_token(); // consume thte identofier
+
+        self.expect_current(TokenKind::Assign)?;
+
+        let (expr, span) = self.parse_expression(Precedence::Lowest)?;
+
+        if self.peek_token_is(TokenKind::Semicolon) {
+            self.next_token();
+        }
+
+        Ok(Statement::VariableDeclaration(Variable {
+            identifier,
+            expr,
+            span: Span {
+                start,
+                end: span.end,
+            },
+        }))
+    }
+
     fn parse_expression_series(
         &mut self,
         end: TokenKind,
@@ -318,6 +319,7 @@ impl<'a> Parser<'a> {
             },
         ))
     }
+
     fn parse_function_statement(&mut self) -> Result<Statement, ParseError> {
         let start = self.current_token.span.start;
 
@@ -519,7 +521,6 @@ impl<'a> Parser<'a> {
             match self.parse_infix_expression(left.clone(), left_start) {
                 Some(infix) => {
                     left = infix?;
-                    dbg!(left.clone());
 
                     if let Expression::Infix(b) = left.clone() {
                         left_start = b.span.start;
@@ -612,7 +613,6 @@ impl<'a> Parser<'a> {
                         span,
                     }));
                 } else {
-                    self.next_token();
                     return Ok(Expression::Identifier(Identifier {
                         name: identifier.name,
                         span,

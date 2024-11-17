@@ -186,5 +186,15 @@ mod tests {
             i < j
             ",
         );
+        assert_parse(
+            "
+            i < 10
+            ",
+        );
+        assert_parse(
+            "
+            10 < j
+            ",
+        );
     }
 }

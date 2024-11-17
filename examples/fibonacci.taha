@@ -8,6 +8,8 @@ fn fibonacci(n) {
     }
 }
 
-#a = fibonacci(2);
+println("Welcome to Taha Lang!");
 
-print("Here is the Result: " + a);
+for #i = 0; i < 100000; i++ {
+    println(fibonacci(i));
+}

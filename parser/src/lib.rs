@@ -169,11 +169,6 @@ impl<'a> Parser<'a> {
     }
 
     // Parse statements
-
-    // for #i = 0; i < 10; i++ {
-    //     println(i);
-    // }
-    // ANCHOR
     fn parse_for_statement(&mut self) -> Result<Statement, ParseError> {
         let start = self.current_token.span.start;
         self.next_token(); // consume for token
@@ -185,7 +180,7 @@ impl<'a> Parser<'a> {
 
         self.expect_current(TokenKind::Semicolon)?;
 
-        let mut condition: Option<Expression> = None;
+        let condition: Option<Expression>;
         match self.parse_expression(Precedence::Lowest) {
             Ok(result) => {
                 condition = Some(result.0);
@@ -196,18 +191,12 @@ impl<'a> Parser<'a> {
             }
         }
 
-        dbg!(condition);
-        dbg!(self.current_token.kind.clone());
-
-        self.expect_current(TokenKind::Semicolon)?;
+        self.expect_peek(TokenKind::Semicolon)?;
         self.next_token();
 
-        dbg!(self.current_token.kind.clone());
-
-        let mut increment: Option<Expression> = None;
+        let increment: Option<Expression>;
         match self.parse_expression(Precedence::Lowest) {
             Ok(result) => {
-                dbg!(result.clone());
                 increment = Some(result.0);
             }
             Err(e) => {
@@ -215,21 +204,30 @@ impl<'a> Parser<'a> {
             }
         }
 
-        dbg!(increment);
+        self.next_token(); // consume increment token
 
-        std::process::exit(0);
+        let body: Box<BlockStatement>;
+        if self.current_token_is(TokenKind::LeftBrace) {
+            body = Box::new(self.parse_block_statement()?);
 
-        // self.expect_current(TokenKind::RightBrace)?;
+            if !self.current_token_is(TokenKind::RightBrace) {
+                return Err("expected to close the statement with a right brace".to_string());
+            }
 
-        // let body = self.parse_block_statement()?;
-
-        // self.expect_peek(TokenKind::RightBrace)?;
+            if self.peek_token_is(TokenKind::Semicolon) {
+                self.next_token();
+            }
+        } else {
+            return Err(format!(
+                "expected to get a block statement declaration with right brace",
+            ));
+        }
 
         Ok(Statement::For(For {
             initializer,
             condition,
             increment,
-            body: todo!(),
+            body,
             span: Span {
                 start,
                 end: self.current_token.span.end,

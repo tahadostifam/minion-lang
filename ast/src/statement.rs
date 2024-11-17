@@ -28,7 +28,7 @@ pub struct For {
     pub initializer: Option<Variable>,
     pub condition: Option<Expression>,
     pub increment: Option<Expression>,
-    pub body: BlockStatement,
+    pub body: Box<BlockStatement>,
     pub span: Span,
 }
 

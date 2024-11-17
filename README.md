@@ -12,13 +12,32 @@ cd Taha-Lang
 cargo build --release
 cp ./target/release/taha /usr/bin/taha
 
-taha --version
+taha version
 ```
 
 ## Example Code
 
 ```
-Coming soon!
+fn fibonacci(n) {
+    if (n <= 0) {
+        ret 0;
+    } else if (n == 1) {
+        ret 1;
+    } else {
+        ret fibonacci(n - 1) + fibonacci(n - 2);
+    }
+}
+
+println("Welcome to Taha Lang!");
+
+for #i = 0; i < 100000; i++ {
+    println(fibonacci(i));
+}
+```
+
+## How to rust? (Dev Mode)
+```bash
+cargo run -- ./examples/example.code
 ```
 
 ## Documentation

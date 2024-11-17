@@ -11,7 +11,7 @@ use object::{
     env::{Env, Environment},
     object::{EvalError, Object},
 };
-use std::{alloc::GlobalAlloc, borrow::Borrow, cell::RefCell, rc::Rc};
+use std::{borrow::Borrow, cell::RefCell, rc::Rc};
 use token::{Token, TokenKind};
 
 mod evaluator_test;
@@ -68,21 +68,37 @@ fn eval_for_statement(
     body: Box<BlockStatement>,
     env: &Env,
 ) -> Result<Rc<Object>, EvalError> {
-    todo!();
-    // if let Some(var) = initializer {
-    //     eval_variable_declaration(&var.identifier.clone(), var.expr.clone(), env)?;
-    // }
+    if let Some(var) = initializer {
+        eval_variable_declaration(&var.identifier.clone(), var.expr.clone(), env)?;
+    }
 
-    // loop {
-    //     eval_block_statements(&body.body, env);
+    loop {
+        if let Some(ref expr) = condition {
+            match &*eval_expression(expr.clone(), env)? {
+                Object::Boolean(value) => {
+                    if *value == true {
+                        eval_block_statements(&body.body, env)?;
 
-    //     if let Some(expr) = condition {
-    //         eval_expression(condition, env)
-    //     }
-    //     break;
-    // }
+                        if let Some(ref expr) = increment {
+                            eval_expression(expr.clone(), env)?;
+                        }
+                    } else {
+                        break;
+                    }
+                }
+                ty @ _ => {
+                    return Err(format!(
+                        "only bool type is valid for the condition of a for_statement but got {}",
+                        ty
+                    ))
+                }
+            }
+        } else {
+            break;
+        }
+    }
 
-    // Ok(Rc::new(Object::Null))
+    Ok(Rc::new(Object::Null))
 }
 
 fn eval_function_statement(

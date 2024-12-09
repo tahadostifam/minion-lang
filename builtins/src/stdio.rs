@@ -19,7 +19,7 @@ pub fn builtin_func_println(params: Vec<Rc<Object>>) -> Rc<Object> {
     Rc::from(Object::Null)
 }
 
-pub fn builtin_func_input(params: Vec<Rc<Object>>) -> Rc<Object> {
+pub fn builtin_func_input(_params: Vec<Rc<Object>>) -> Rc<Object> {
     let mut s = String::new();
 
     match std::io::stdin().read_line(&mut s) {

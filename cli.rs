@@ -12,38 +12,63 @@ use std::{
     rc::Rc,
 };
 
+const VERSION: &str = env!("CARGO_PKG_VERSION");
+
 static PROMPT: &str = "(taha) > ";
 static RESULT: &str = "=>";
 
 fn main() {
     let args: Vec<String> = env::args().collect();
 
-    if args.len() == 2 {
-        let file_path = args.index(1);
+    if args.len() > 1 {
+        let option = args.index(1).as_str();
 
-        match fs::read_to_string(file_path) {
-            Err(err) => {
-                write_line(&err.to_string());
+        match option {
+            "version"| "v" => {
+                show_version();
             }
-            Ok(file_content) => {
-                match run(&file_content) {
-                    Err(e) => {
-                        write_line(e.as_str());
+            "interactive" | "i" => {
+                start_repl();
+            }
+            "run" | "r" => {
+                let file_path = args.index(2);
+
+                match fs::read_to_string(file_path) {
+                    Err(err) => {
+                        write_line(&err.to_string());
                     }
-                    Ok(_) => {},
-                }            
+                    Ok(file_content) => match run(&file_content) {
+                        Err(e) => {
+                            write_line(e.as_str());
+                        }
+                        Ok(_) => {}
+                    },
+                }
             }
-        }
-    } else if args.len() == 1 {
-        start_repl();
+            "help" | "h" | _ => {
+                show_help_menu();
+            }
+        };
     } else {
-        write_line("no such file or directory");
-        std::process::exit(1);
+        show_help_menu();
+        std::process::exit(0);
     }
 }
 
 fn write_line(input: &str) {
     println!("{} {}", RESULT, input);
+}
+
+fn show_help_menu() {
+    println!("usage: taha [command] [switches] [arguments]");
+    println!("interactive, i: run an interactive shell");
+    println!("version, v: print the version number");
+    println!("help, h: show this message");
+    println!("run, r: <file_path>");
+}
+
+fn show_version() {
+    println!("Taha {}", VERSION);
 }
 
 pub fn start_repl() {

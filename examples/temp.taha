@@ -1,13 +1,7 @@
-fn fibonacci(n) {
-    if (n <= 0) {
-        ret 0;
-    } else if (n == 1) {
-        ret 1;
-    } else {
-        ret fibonacci(n - 1) + fibonacci(n - 2);
-    }
-}
+#userInput = input("Enter your name: ");
 
-for #i = 0; i < 100000; i++ {
-    println(fibonacci(i));
+print("Hello, " + userInput + "!");
+
+if (userInput == 2) {
+    print(1);
 }

@@ -5,7 +5,7 @@ edition = "2021"
 resolver = "2"
 
 [workspace]
-members = ["ast", "builtins", "compiler", "evaluator", "lexer", "object", "parser", "token"]
+members = ["ast", "builtins", "evaluator", "lexer", "object", "parser", "token"]
 
 [[bin]]
 name = "taha"
@@ -15,4 +15,3 @@ path = "./cli.rs"
 parser = { path = "./parser", version = "*" }
 evaluator = { path = "./evaluator", version = "*" }
 object = { path = "./object", version = "*" }
-llvm-ir = "0.11.1"
